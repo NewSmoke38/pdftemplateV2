@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import PDFViewer, { type FieldPosition } from './components/PDFViewer';
 import TemplateManager, { type Template } from './components/TemplateManager';
 import FormBuilder from './components/FormBuilder';
+import FloatingToolbar from './components/FloatingToolbar';
 import { PDFFiller } from './utils/pdfFiller';
 import './App.css';
 
@@ -13,6 +14,27 @@ function App() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Load PDF file directly on component mount
+  useEffect(() => {
+    const loadDefaultPDF = async () => {
+      try {
+        const response = await fetch('/main.pdf');
+        if (response.ok) {
+          const blob = await response.blob();
+          const file = new File([blob], 'main.pdf', { type: 'application/pdf' });
+          setPdfFile(file);
+          console.log('PDF loaded successfully:', file.name);
+        } else {
+          console.error('Failed to load PDF:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+      }
+    };
+
+    loadDefaultPDF();
+  }, []);
 
   // Load templates from localStorage on component mount
   React.useEffect(() => {
@@ -195,11 +217,6 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>PDF Template Filler</h1>
-        <p>Upload a PDF, add fields with coordinates, fill them with data, and download the result</p>
-      </header>
-
       {notification && (
         <div className={`notification ${notification.type}`}>
           {notification.message}
@@ -207,35 +224,11 @@ function App() {
       )}
 
       <div className="app-content">
-        <div className="upload-section">
-          <div className="file-upload">
-            <label htmlFor="pdf-upload" className="upload-label">
-              <span className="upload-icon">📄</span>
-              <span>Choose PDF File</span>
-            </label>
-            <input
-              id="pdf-upload"
-              type="file"
-              accept=".pdf"
-              onChange={handleFileUpload}
-              className="file-input"
-            />
-            {pdfFile && (
-              <div className="file-info">
-                <span>📄 {pdfFile.name}</span>
-                <span className="file-size">
-                  ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB)
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {pdfFile && (
+        {pdfFile ? (
           <div className="main-workspace">
             <div className="pdf-section">
               <div className="section-header">
-                <h2>PDF Viewer & Field Editor</h2>
+                <h2>PDF Template Filler</h2>
                 <div className="field-stats">
                   <span>Fields: {fieldStats.total}</span>
                   <span>Filled: {fieldStats.filled}</span>
@@ -252,86 +245,37 @@ function App() {
                 onFieldSelect={handleFieldSelect}
               />
             </div>
-
-            <div className="sidebar">
-              <div className="template-section">
-                <TemplateManager
-                  templates={templates}
-                  onTemplateSave={handleTemplateSave}
-                  onTemplateLoad={handleTemplateLoad}
-                  onTemplateDelete={handleTemplateDelete}
-                  currentFields={fields}
-                />
-              </div>
-
-              <div className="form-section">
-                <FormBuilder
-                  fields={fields}
-                  onFieldUpdate={handleFieldUpdate}
-                  onFieldDelete={handleFieldDelete}
-                  selectedFieldId={selectedFieldId}
-                  onFieldSelect={handleFieldSelect}
-                  formData={formData}
-                  onFormDataChange={handleFormDataChange}
-                />
-              </div>
-
-              <div className="download-section">
-                <button
-                  onClick={() => {
-                    console.log('📄 App: Fill & Download button clicked', { 
-                      isProcessing, 
-                      fieldsLength: fields.length,
-                      formData 
-                    });
-                    handleFillAndDownload();
-                  }}
-                  disabled={isProcessing || fields.length === 0}
-                  className="download-btn"
-                >
-                  {isProcessing ? 'Processing...' : 'Fill & Download PDF'}
-                </button>
-                <p className="download-info">
-                  {fields.length === 0 
-                    ? 'Add fields to the PDF first' 
-                    : `Ready to fill ${fieldStats.filled}/${fieldStats.total} fields`
-                  }
-                </p>
-              </div>
-            </div>
           </div>
-        )}
-
-        {!pdfFile && (
-          <div className="welcome-section">
-            <div className="welcome-content">
-              <h2>Welcome to PDF Template Filler</h2>
-              <div className="features">
-                <div className="feature">
-                  <span className="feature-icon">📄</span>
-                  <h3>Upload PDF</h3>
-                  <p>Upload any PDF document to start creating your template</p>
-                </div>
-                <div className="feature">
-                  <span className="feature-icon">📍</span>
-                  <h3>Add Fields</h3>
-                  <p>Click and drag to add text fields at precise coordinates</p>
-                </div>
-                <div className="feature">
-                  <span className="feature-icon">💾</span>
-                  <h3>Save Templates</h3>
-                  <p>Save your field configurations for reuse</p>
-                </div>
-                <div className="feature">
-                  <span className="feature-icon">📝</span>
-                  <h3>Fill & Download</h3>
-                  <p>Fill in your data and download the completed PDF</p>
-                </div>
-              </div>
+        ) : (
+          <div className="loading-section">
+            <div className="loading-content">
+              <div className="loading-spinner"></div>
+              <h2>Loading PDF...</h2>
+              <p>Please wait while we load your PDF document</p>
             </div>
           </div>
         )}
       </div>
+
+      {/* Floating Toolbar */}
+      {pdfFile && (
+        <FloatingToolbar
+          fields={fields}
+          templates={templates}
+          onFieldAdd={handleFieldAdd}
+          onFieldUpdate={handleFieldUpdate}
+          onFieldDelete={handleFieldDelete}
+          selectedFieldId={selectedFieldId}
+          onFieldSelect={handleFieldSelect}
+          formData={formData}
+          onFormDataChange={handleFormDataChange}
+          onTemplateSave={handleTemplateSave}
+          onTemplateLoad={handleTemplateLoad}
+          onTemplateDelete={handleTemplateDelete}
+          onFillAndDownload={handleFillAndDownload}
+          isProcessing={isProcessing}
+        />
+      )}
     </div>
   );
 }

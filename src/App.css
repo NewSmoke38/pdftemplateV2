@@ -21,35 +21,51 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.app-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
-}
-
-.app-header p {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto;
+  background-color: #f5f7fa;
 }
 
 .app-content {
   flex: 1;
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 1rem;
   width: 100%;
+  padding-bottom: 120px; /* Space for floating toolbar */
+}
+
+/* Loading section */
+.loading-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.loading-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-content h2 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.loading-content p {
+  color: #666;
 }
 
 /* Notifications */
@@ -144,10 +160,8 @@ body {
 
 /* Main workspace */
 .main-workspace {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 2rem;
-  min-height: 600px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .pdf-section {
@@ -155,6 +169,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  width: 100%;
 }
 
 .section-header {
@@ -269,6 +284,17 @@ body {
   font-weight: bold;
   transition: all 0.2s ease;
   user-select: none;
+  touch-action: none; /* Prevent default touch behaviors */
+}
+
+.field-overlay.dragging {
+  cursor: grabbing;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
 }
 
 .field-overlay:hover {
@@ -816,6 +842,196 @@ body {
   max-width: 500px;
 }
 
+/* Floating Toolbar */
+.floating-toolbar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.toolbar-icons {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 25px;
+  padding: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toolbar-icon {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background: #f8f9fa;
+  color: #333;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-icon:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.toolbar-icon.active {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.toolbar-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 90vw;
+  width: 400px;
+  max-height: 60vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.panel-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.close-panel {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-panel:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+/* Toolbar specific styles */
+.template-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.template-controls button {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.save-template-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-template-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.save-template-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.load-template-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+.load-template-btn:hover {
+  background: #138496;
+}
+
+.download-section {
+  text-align: center;
+}
+
+.download-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.download-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.download-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.download-info {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 /* Responsive design */
 @media (max-width: 1200px) {
   .main-workspace {
@@ -829,25 +1045,77 @@ body {
 }
 
 @media (max-width: 768px) {
-  .app-header {
-    padding: 1.5rem 1rem;
-  }
-
-  .app-header h1 {
-    font-size: 2rem;
-  }
-
   .app-content {
-    padding: 1rem;
+    padding: 0.5rem;
+    padding-bottom: 140px; /* More space for floating toolbar on mobile */
   }
 
-  .main-workspace {
-    gap: 1rem;
+  .section-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .field-stats {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .field-stats span {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
   }
 
   .pdf-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .pdf-controls button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .page-controls,
+  .scale-controls {
+    justify-content: center;
+  }
+
+  .pdf-container {
+    padding: 0.5rem;
+  }
+
+  .toolbar-panel {
+    width: 95vw;
+    max-width: 95vw;
+    padding: 1rem;
+    margin: 0 2.5vw;
+  }
+
+  .toolbar-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  .floating-toolbar {
+    bottom: 15px;
+  }
+
+  .modal {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: 95vw;
+  }
+
+  .position-inputs {
+    grid-template-columns: 1fr;
   }
 
   .template-controls {
@@ -855,15 +1123,6 @@ body {
   }
 
   .features {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-
-  .position-inputs {
     grid-template-columns: 1fr;
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -41,11 +41,35 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [isAddingField, setIsAddingField] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [newField, setNewField] = useState<Partial<FieldPosition> | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragFieldId, setDragFieldId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   };
+
+  // Add global mouse up listener to handle dragging outside the container
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        setDragFieldId(null);
+        setDragOffset(null);
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('touchend', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('touchend', handleGlobalMouseUp);
+    };
+  }, [isDragging]);
 
   const handlePageClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     console.log('🖱️ PDFViewer: handlePageClick called', { isAddingField, dragStart, fieldsLength: fields.length });
@@ -94,42 +118,161 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   }, [isAddingField, dragStart, fields.length, onFieldAdd]);
 
-  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    if (!isAddingField || !dragStart || !newField || !pageRef.current) return;
-
+  // Touch support for mobile devices
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (!isAddingField || !pageRef.current) return;
+    
+    const touch = event.touches[0];
     const rect = pageRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
 
-    const width = Math.abs(x - dragStart.x);
-    const height = Math.abs(y - dragStart.y);
-    const finalX = Math.min(x, dragStart.x);
-    const finalY = Math.min(y, dragStart.y);
+    if (!dragStart) {
+      setDragStart({ x, y });
+      setNewField({
+        x,
+        y,
+        width: 0,
+        height: 0,
+        label: `Field ${fields.length + 1}`,
+        type: 'text',
+      });
+    }
+  }, [isAddingField, dragStart, fields.length]);
 
-    setNewField({
-      ...newField,
-      x: finalX,
-      y: finalY,
-      width: Math.max(width, 100),
-      height: Math.max(height, 20),
-    });
-  }, [isAddingField, dragStart, newField]);
+  const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (isDragging) {
+      setIsDragging(false);
+      setDragFieldId(null);
+      setDragOffset(null);
+    } else if (isAddingField && dragStart && pageRef.current) {
+      const touch = event.changedTouches[0];
+      const rect = pageRef.current.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+
+      const width = Math.abs(x - dragStart.x);
+      const height = Math.abs(y - dragStart.y);
+      const finalX = Math.min(x, dragStart.x);
+      const finalY = Math.min(y, dragStart.y);
+
+      const field: FieldPosition = {
+        id: `field_${Date.now()}`,
+        x: finalX,
+        y: finalY,
+        width: Math.max(width, 100),
+        height: Math.max(height, 20),
+        label: `Field ${fields.length + 1}`,
+        type: 'text',
+      };
+
+      onFieldAdd(field);
+      setIsAddingField(false);
+      setDragStart(null);
+      setNewField(null);
+    }
+  }, [isDragging, isAddingField, dragStart, fields.length, onFieldAdd]);
+
+  const handleFieldTouchStart = useCallback((event: React.TouchEvent, fieldId: string) => {
+    event.stopPropagation();
+    if (!pageRef.current) return;
+
+    const field = fields.find(f => f.id === fieldId);
+    if (!field) return;
+
+    const touch = event.touches[0];
+    const rect = pageRef.current.getBoundingClientRect();
+    const touchX = touch.clientX - rect.left;
+    const touchY = touch.clientY - rect.top;
+
+    // Calculate offset from touch to field position
+    const offsetX = touchX - field.x;
+    const offsetY = touchY - field.y;
+
+    setIsDragging(true);
+    setDragFieldId(fieldId);
+    setDragOffset({ x: offsetX, y: offsetY });
+    onFieldSelect(fieldId);
+  }, [fields, onFieldSelect]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (isDragging && dragFieldId && dragOffset && pageRef.current) {
+      const touch = event.touches[0];
+      const rect = pageRef.current.getBoundingClientRect();
+      const touchX = touch.clientX - rect.left;
+      const touchY = touch.clientY - rect.top;
+
+      const newX = touchX - dragOffset.x;
+      const newY = touchY - dragOffset.y;
+
+      onFieldUpdate(dragFieldId, { x: newX, y: newY });
+    }
+  }, [isDragging, dragFieldId, dragOffset, onFieldUpdate]);
+
 
   const handleFieldClick = (event: React.MouseEvent, fieldId: string) => {
     event.stopPropagation();
     onFieldSelect(fieldId);
   };
 
-  const handleFieldDrag = (event: React.MouseEvent, fieldId: string) => {
+  const handleFieldMouseDown = (event: React.MouseEvent, fieldId: string) => {
     event.stopPropagation();
     if (!pageRef.current) return;
 
-    const rect = pageRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const field = fields.find(f => f.id === fieldId);
+    if (!field) return;
 
-    onFieldUpdate(fieldId, { x, y });
+    const rect = pageRef.current.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Calculate offset from mouse to field position
+    const offsetX = mouseX - field.x;
+    const offsetY = mouseY - field.y;
+
+    setIsDragging(true);
+    setDragFieldId(fieldId);
+    setDragOffset({ x: offsetX, y: offsetY });
+    onFieldSelect(fieldId);
   };
+
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging && dragFieldId && dragOffset && pageRef.current) {
+      const rect = pageRef.current.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      const newX = mouseX - dragOffset.x;
+      const newY = mouseY - dragOffset.y;
+
+      onFieldUpdate(dragFieldId, { x: newX, y: newY });
+    } else if (isAddingField && dragStart && newField && pageRef.current) {
+      const rect = pageRef.current.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const width = Math.abs(x - dragStart.x);
+      const height = Math.abs(y - dragStart.y);
+      const finalX = Math.min(x, dragStart.x);
+      const finalY = Math.min(y, dragStart.y);
+
+      setNewField({
+        ...newField,
+        x: finalX,
+        y: finalY,
+        width: Math.max(width, 100),
+        height: Math.max(height, 20),
+      });
+    }
+  }, [isDragging, dragFieldId, dragOffset, isAddingField, dragStart, newField, onFieldUpdate]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isDragging) {
+      setIsDragging(false);
+      setDragFieldId(null);
+      setDragOffset(null);
+    }
+  }, [isDragging]);
 
   const handleFieldResize = (event: React.MouseEvent, fieldId: string, direction: string) => {
     event.stopPropagation();
@@ -219,6 +362,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             className="pdf-page-container"
             onClick={handlePageClick}
             onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             style={{ position: 'relative' }}
           >
             <Document
@@ -239,7 +386,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             {fields.map((field) => (
               <div
                 key={field.id}
-                className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''}`}
+                className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''}`}
                 style={{
                   position: 'absolute',
                   left: field.x,
@@ -257,7 +404,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   fontWeight: 'bold',
                 }}
                 onClick={(e) => handleFieldClick(e, field.id)}
-                onMouseDown={(e) => handleFieldDrag(e, field.id)}
+                onMouseDown={(e) => handleFieldMouseDown(e, field.id)}
+                onTouchStart={(e) => handleFieldTouchStart(e, field.id)}
               >
                 {field.label}
                 {selectedFieldId === field.id && (
