@@ -14,6 +14,7 @@ export interface FieldPosition {
   height: number;
   label: string;
   type: 'text' | 'date' | 'number';
+  pageNumber: number; // Page number where this field is located (1-based)
 }
 
 interface PDFViewerProps {
@@ -94,6 +95,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         height: 0,
         label: `Field ${fields.length + 1}`,
         type: 'text',
+        pageNumber: pageNumber,
       });
     } else {
       const width = Math.abs(x - dragStart.x);
@@ -109,6 +111,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         height: Math.max(height, 20),
         label: `Field ${fields.length + 1}`,
         type: 'text',
+        pageNumber: pageNumber,
       };
 
       console.log('✅ PDFViewer: Creating new field', field);
@@ -166,6 +169,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         height: Math.max(height, 20),
         label: `Field ${fields.length + 1}`,
         type: 'text',
+        pageNumber: pageNumber,
       };
 
       onFieldAdd(field);
@@ -343,7 +347,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             Previous
           </button>
           <span>
-            Page {pageNumber} of {numPages}
+            Page {pageNumber} of {numPages} 
+            ({fields.filter(f => f.pageNumber === pageNumber).length} fields)
           </span>
           <button
             onClick={() => setPageNumber(Math.min(numPages, pageNumber + 1))}
@@ -386,8 +391,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               />
             </Document>
 
-            {/* Render existing fields */}
-            {fields.map((field) => (
+            {/* Render existing fields for current page */}
+            {fields.filter(field => field.pageNumber === pageNumber).map((field) => (
               <div
                 key={field.id}
                 className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''}`}

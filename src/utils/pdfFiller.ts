@@ -17,6 +17,64 @@ export class PDFFiller {
     }
   }
 
+  static async mergePDFs(pdfFile1: File, pdfFile2: File): Promise<File> {
+    console.log('📄 PDFFiller: mergePDFs called', { 
+      pdf1Name: pdfFile1.name, 
+      pdf2Name: pdfFile2.name 
+    });
+
+    try {
+      // Read both PDF files
+      console.log('📄 PDFFiller: Reading PDF files');
+      const [pdfBytes1, pdfBytes2] = await Promise.all([
+        pdfFile1.arrayBuffer(),
+        pdfFile2.arrayBuffer()
+      ]);
+      console.log('📄 PDFFiller: PDF files read', { 
+        size1: pdfBytes1.byteLength, 
+        size2: pdfBytes2.byteLength 
+      });
+      
+      // Load both PDF documents
+      console.log('📄 PDFFiller: Loading PDF documents');
+      const [pdfDoc1, pdfDoc2] = await Promise.all([
+        PDFDocument.load(pdfBytes1),
+        PDFDocument.load(pdfBytes2)
+      ]);
+      console.log('📄 PDFFiller: PDF documents loaded');
+      
+      // Create a new PDF document
+      const mergedPdf = await PDFDocument.create();
+      console.log('📄 PDFFiller: New PDF document created');
+      
+      // Copy pages from first PDF
+      const pages1 = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+      pages1.forEach((page) => mergedPdf.addPage(page));
+      console.log('📄 PDFFiller: Pages from first PDF added', pages1.length);
+      
+      // Copy pages from second PDF
+      const pages2 = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+      pages2.forEach((page) => mergedPdf.addPage(page));
+      console.log('📄 PDFFiller: Pages from second PDF added', pages2.length);
+      
+      // Save the merged PDF
+      console.log('📄 PDFFiller: Saving merged PDF');
+      const mergedPdfBytes = await mergedPdf.save();
+      console.log('📄 PDFFiller: Merged PDF saved', { size: mergedPdfBytes.length });
+      
+      // Create a new File object
+      const mergedFile = new File([mergedPdfBytes], 'merged-document.pdf', { 
+        type: 'application/pdf' 
+      });
+      console.log('📄 PDFFiller: Merged file created', mergedFile.name);
+      
+      return mergedFile;
+    } catch (error) {
+      console.error('💥 PDFFiller: Error merging PDFs:', error);
+      throw new Error(`Failed to merge PDFs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
   static async fillPDF(
     pdfFile: File,
     fields: FieldPosition[],
@@ -40,7 +98,7 @@ export class PDFFiller {
       const pdfDoc = await PDFDocument.load(pdfBytes);
       console.log('📄 PDFFiller: PDF document loaded');
       
-      // Get the first page (you can modify this to handle multiple pages)
+      // Get all pages
       const pages = pdfDoc.getPages();
       console.log('📄 PDFFiller: PDF pages count:', pages.length);
       
@@ -49,9 +107,7 @@ export class PDFFiller {
         return { success: false, error: 'PDF has no pages' };
       }
 
-      const page = pages[0];
-      const { height: pageHeight } = page.getSize();
-      console.log('📄 PDFFiller: Page dimensions', { pageHeight });
+      console.log('📄 PDFFiller: Processing all pages', pages.length);
 
       // Load font
       console.log('📄 PDFFiller: Loading font');
@@ -69,6 +125,18 @@ export class PDFFiller {
           continue;
         }
 
+        // Determine which page this field belongs to
+        const targetPageIndex = field.pageNumber - 1; // Convert to 0-based index
+        const targetPage = pages[targetPageIndex];
+        
+        if (!targetPage) {
+          console.log('❌ PDFFiller: Target page not found', { pageNumber: field.pageNumber, targetPageIndex, totalPages: pages.length });
+          continue;
+        }
+
+        const { height: pageHeight } = targetPage.getSize();
+        console.log('📄 PDFFiller: Target page dimensions', { pageHeight, pageIndex: targetPageIndex });
+
         // Convert coordinates from screen space to PDF space
         // PDF coordinates start from bottom-left, screen coordinates from top-left
         const pdfX = field.x;
@@ -82,11 +150,12 @@ export class PDFFiller {
           value,
           pdfX,
           pdfY,
-          fontSize
+          fontSize,
+          pageIndex: targetPageIndex
         });
 
         // Add text to the PDF
-        page.drawText(value, {
+        targetPage.drawText(value, {
           x: pdfX + 2, // Small padding from field border
           y: pdfY + (field.height - fontSize) / 2, // Center vertically
           size: fontSize,

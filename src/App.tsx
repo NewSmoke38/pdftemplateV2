@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import PDFViewer, { type FieldPosition } from './components/PDFViewer';
-import TemplateManager, { type Template } from './components/TemplateManager';
-import FormBuilder from './components/FormBuilder';
+import { type Template } from './components/TemplateManager';
 import FloatingToolbar from './components/FloatingToolbar';
 import { PDFFiller } from './utils/pdfFiller';
 import './App.css';
@@ -16,25 +15,141 @@ function App() {
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [movable, setMovable] = useState<boolean>(false); // Controls if fields can be created/moved
 
-  // Load PDF file directly on component mount
+  // Static fields configuration - you can provide this data
+  // Fields for different pages - Page 1 fields
+  const staticFields: FieldPosition[] = [
+    {
+      "id": "field_1757173175436",
+      "x": 138.0113639831543,
+      "y": 147.84091186523438,
+      "width": 100,
+      "height": 20,
+      "label": "Page 1 Field 1",
+      "type": "text",
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757175562002",
+      "x": 186.0113639831543,
+      "y": 204.84091186523438,
+      "width": 100,
+      "height": 20,
+      "label": "Field 2",
+      "type": "text",
+      "pageNumber": 2
+    }
+    // Add more fields for page 1 here
+    // {
+    //   "id": "field_page1_2",
+    //   "x": 200,
+    //   "y": 200,
+    //   "width": 120,
+    //   "height": 25,
+    //   "label": "Page 1 Field 2",
+    //   "type": "text",
+    //   "pageNumber": 1
+    // },
+    
+    // Fields for page 2 (main1.pdf content) - Uncomment to add fields for page 2
+    // {
+    //   "id": "field_page2_1",
+    //   "x": 150,
+    //   "y": 100,
+    //   "width": 100,
+    //   "height": 20,
+    //   "label": "Page 2 Field 1",
+    //   "type": "text",
+    //   "pageNumber": 2
+    // },
+    // {
+    //   "id": "field_page2_2",
+    //   "x": 150,
+    //   "y": 150,
+    //   "width": 100,
+    //   "height": 20,
+    //   "label": "Page 2 Field 2",
+    //   "type": "date",
+    //   "pageNumber": 2
+    // },
+    // {
+    //   "id": "field_page2_3",
+    //   "x": 150,
+    //   "y": 200,
+    //   "width": 100,
+    //   "height": 20,
+    //   "label": "Page 2 Field 3",
+    //   "type": "number",
+    //   "pageNumber": 2
+    // }
+  ];
+
+  // Load and merge PDF files directly on component mount
   useEffect(() => {
-    const loadDefaultPDF = async () => {
+    const loadAndMergePDFs = async () => {
       try {
-        const response = await fetch('/main.pdf');
-        if (response.ok) {
-          const blob = await response.blob();
-          const file = new File([blob], 'main.pdf', { type: 'application/pdf' });
-          setPdfFile(file);
-          console.log('PDF loaded successfully:', file.name);
-        } else {
-          console.error('Failed to load PDF:', response.statusText);
+        console.log('Loading main.pdf and main1.pdf...');
+        
+        // Load both PDF files
+        const [mainResponse, main1Response] = await Promise.all([
+          fetch('/main.pdf'),
+          fetch('/main1.pdf')
+        ]);
+
+        if (!mainResponse.ok || !main1Response.ok) {
+          throw new Error('Failed to load one or both PDF files');
         }
+
+        const [mainBlob, main1Blob] = await Promise.all([
+          mainResponse.blob(),
+          main1Response.blob()
+        ]);
+
+        const [mainFile, main1File] = [
+          new File([mainBlob], 'main.pdf', { type: 'application/pdf' }),
+          new File([main1Blob], 'main1.pdf', { type: 'application/pdf' })
+        ];
+
+        console.log('Both PDFs loaded successfully, merging...');
+        
+        // Merge the PDFs using PDFFiller
+        const mergedFile = await PDFFiller.mergePDFs(mainFile, main1File);
+        setPdfFile(mergedFile);
+        console.log('PDFs merged successfully:', mergedFile.name);
       } catch (error) {
-        console.error('Error loading PDF:', error);
+        console.error('Error loading or merging PDFs:', error);
+        // Fallback to just main.pdf if merging fails
+        try {
+          const response = await fetch('/main.pdf');
+          if (response.ok) {
+            const blob = await response.blob();
+            const file = new File([blob], 'main.pdf', { type: 'application/pdf' });
+            setPdfFile(file);
+            console.log('Fallback: main.pdf loaded successfully');
+          }
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
+        }
       }
     };
 
-    loadDefaultPDF();
+    loadAndMergePDFs();
+  }, []);
+
+  // Load static fields on initial load
+  useEffect(() => {
+    if (staticFields.length > 0) {
+      console.log('📋 Loading static fields:', staticFields);
+      setFields(staticFields);
+      
+      // Initialize form data for static fields
+      const initialFormData: Record<string, string> = {};
+      staticFields.forEach(field => {
+        initialFormData[field.id] = '';
+      });
+      setFormData(initialFormData);
+      
+      console.log('✅ Static fields loaded successfully');
+    }
   }, []);
 
   // Load templates from localStorage on component mount
@@ -64,24 +179,24 @@ function App() {
     setTimeout(() => setNotification(null), 3000);
   }, []);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
-      setFields([]);
-      setFormData({});
-      setSelectedFieldId(null);
-      showNotification('success', 'PDF loaded successfully');
-    } else {
-      showNotification('error', 'Please select a valid PDF file');
-    }
-  }, [showNotification]);
 
   const handleFieldAdd = useCallback((field: FieldPosition) => {
     console.log('➕ App: handleFieldAdd called', field);
+    
+    // Console log the field data in a format that can be easily copied
+    console.log('📋 Field Data for Static Configuration:');
+    console.log(JSON.stringify(field, null, 2));
+    console.log('📋 Copy this field data to add to staticFields array');
+    
     setFields(prev => {
       const newFields = [...prev, field];
       console.log('➕ App: Fields updated', { oldFields: prev, newFields });
+      
+      // Console log all current fields in static configuration format
+      console.log('📋 All Current Fields for Static Configuration:');
+      console.log(JSON.stringify(newFields, null, 2));
+      console.log('📋 Copy this entire array to replace staticFields');
+      
       return newFields;
     });
     setFormData(prev => {
@@ -95,9 +210,21 @@ function App() {
   }, [showNotification]);
 
   const handleFieldUpdate = useCallback((id: string, updates: Partial<FieldPosition>) => {
-    setFields(prev => prev.map(field => 
-      field.id === id ? { ...field, ...updates } : field
-    ));
+    setFields(prev => {
+      const updatedFields = prev.map(field => 
+        field.id === id ? { ...field, ...updates } : field
+      );
+      
+      // Console log updated fields when position changes
+      if (updates.x !== undefined || updates.y !== undefined) {
+        console.log('📍 Field position updated:', { id, updates });
+        console.log('📋 Updated Fields for Static Configuration:');
+        console.log(JSON.stringify(updatedFields, null, 2));
+        console.log('📋 Copy this entire array to replace staticFields');
+      }
+      
+      return updatedFields;
+    });
   }, []);
 
   const handleFieldDelete = useCallback((id: string) => {
@@ -216,6 +343,19 @@ function App() {
 
   const fieldStats = PDFFiller.getFieldStats(fields, formData);
 
+  // Helper function to export current fields configuration
+  const exportFieldsConfiguration = useCallback(() => {
+    console.log('📋 EXPORT FIELDS CONFIGURATION');
+    console.log('================================');
+    console.log('Copy this code to replace the staticFields array:');
+    console.log('');
+    console.log('const staticFields: FieldPosition[] = ' + JSON.stringify(fields, null, 2) + ';');
+    console.log('');
+    console.log('================================');
+    console.log('Total fields:', fields.length);
+    console.log('Fields data:', fields);
+  }, [fields]);
+
   return (
     <div className="app">
       {notification && (
@@ -229,11 +369,12 @@ function App() {
           <div className="main-workspace">
             <div className="pdf-section">
               <div className="section-header">
-                <h2>PDF Template Filler</h2>
+                <h2>FataakFill</h2>
                 <div className="field-stats">
-                  <span>Fields: {fieldStats.total}</span>
+                  <span>Total Fields: {fieldStats.total}</span>
                   <span>Filled: {fieldStats.filled}</span>
                   <span>Completion: {fieldStats.completionPercentage}%</span>
+                  <span>Pages: {Math.max(...fields.map(f => f.pageNumber), 1)}</span>
                 </div>
               </div>
               <PDFViewer
@@ -264,7 +405,6 @@ function App() {
         <FloatingToolbar
           fields={fields}
           templates={templates}
-          onFieldAdd={handleFieldAdd}
           onFieldUpdate={handleFieldUpdate}
           onFieldDelete={handleFieldDelete}
           selectedFieldId={selectedFieldId}
@@ -278,6 +418,7 @@ function App() {
           isProcessing={isProcessing}
           movable={movable}
           onMovableToggle={() => setMovable(!movable)}
+          onExportFields={exportFieldsConfiguration}
         />
       )}
     </div>

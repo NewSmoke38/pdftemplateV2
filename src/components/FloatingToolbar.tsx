@@ -5,7 +5,6 @@ import { type Template } from './TemplateManager';
 interface FloatingToolbarProps {
   fields: FieldPosition[];
   templates: Template[];
-  onFieldAdd: (field: FieldPosition) => void;
   onFieldUpdate: (id: string, field: Partial<FieldPosition>) => void;
   onFieldDelete: (id: string) => void;
   selectedFieldId: string | null;
@@ -19,12 +18,12 @@ interface FloatingToolbarProps {
   isProcessing: boolean;
   movable: boolean;
   onMovableToggle: () => void;
+  onExportFields: () => void;
 }
 
 const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   fields,
   templates,
-  onFieldAdd,
   onFieldUpdate,
   onFieldDelete,
   selectedFieldId,
@@ -38,6 +37,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   isProcessing,
   movable,
   onMovableToggle,
+  onExportFields,
 }) => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [showFieldEditor, setShowFieldEditor] = useState(false);
@@ -163,6 +163,15 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               title="Templates"
             >
               💾
+            </button>
+          )}
+          {movable && (
+            <button
+              className="toolbar-icon"
+              onClick={onExportFields}
+              title="Export Fields Configuration"
+            >
+              📤
             </button>
           )}
           {!movable && (
