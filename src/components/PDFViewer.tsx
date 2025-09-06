@@ -24,6 +24,7 @@ interface PDFViewerProps {
   onFieldDelete: (id: string) => void;
   selectedFieldId: string | null;
   onFieldSelect: (id: string | null) => void;
+  movable: boolean;
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
@@ -34,6 +35,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   onFieldDelete,
   selectedFieldId,
   onFieldSelect,
+  movable,
 }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -72,9 +74,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   }, [isDragging]);
 
   const handlePageClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    console.log('🖱️ PDFViewer: handlePageClick called', { isAddingField, dragStart, fieldsLength: fields.length });
+    console.log('🖱️ PDFViewer: handlePageClick called', { isAddingField, dragStart, fieldsLength: fields.length, movable });
     
-    if (!isAddingField || !pageRef.current) return;
+    if (!movable || !isAddingField || !pageRef.current) return;
 
     const rect = pageRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -116,7 +118,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setNewField(null);
       console.log('🔄 PDFViewer: Field creation completed, resetting state');
     }
-  }, [isAddingField, dragStart, fields.length, onFieldAdd]);
+  }, [movable, isAddingField, dragStart, fields.length, onFieldAdd]);
 
   // Touch support for mobile devices
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
@@ -175,7 +177,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   const handleFieldTouchStart = useCallback((event: React.TouchEvent, fieldId: string) => {
     event.stopPropagation();
-    if (!pageRef.current) return;
+    if (!movable || !pageRef.current) return;
 
     const field = fields.find(f => f.id === fieldId);
     if (!field) return;
@@ -193,7 +195,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     setDragFieldId(fieldId);
     setDragOffset({ x: offsetX, y: offsetY });
     onFieldSelect(fieldId);
-  }, [fields, onFieldSelect]);
+  }, [movable, fields, onFieldSelect]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (isDragging && dragFieldId && dragOffset && pageRef.current) {
@@ -217,7 +219,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   const handleFieldMouseDown = (event: React.MouseEvent, fieldId: string) => {
     event.stopPropagation();
-    if (!pageRef.current) return;
+    if (!movable || !pageRef.current) return;
 
     const field = fields.find(f => f.id === fieldId);
     if (!field) return;
@@ -322,15 +324,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   return (
     <div className="pdf-viewer">
       <div className="pdf-controls">
-        <button
-          onClick={() => {
-            console.log('➕ PDFViewer: Add Field button clicked', { isAddingField });
-            setIsAddingField(!isAddingField);
-          }}
-          className={isAddingField ? 'active' : ''}
-        >
-          {isAddingField ? 'Cancel Adding Field' : 'Add Field'}
-        </button>
+        {movable && (
+          <button
+            onClick={() => {
+              console.log('➕ PDFViewer: Add Field button clicked', { isAddingField });
+              setIsAddingField(!isAddingField);
+            }}
+            className={isAddingField ? 'active' : ''}
+          >
+            {isAddingField ? 'Cancel Adding Field' : 'Add Field'}
+          </button>
+        )}
         <div className="page-controls">
           <button
             onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
@@ -395,7 +399,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   height: field.height,
                   border: '2px dashed #007bff',
                   backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                  cursor: 'move',
+                  cursor: movable ? 'move' : 'default',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -408,7 +412,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 onTouchStart={(e) => handleFieldTouchStart(e, field.id)}
               >
                 {field.label}
-                {selectedFieldId === field.id && (
+                {selectedFieldId === field.id && movable && (
                   <>
                     <div
                       className="resize-handle se"

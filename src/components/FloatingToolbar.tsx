@@ -17,6 +17,8 @@ interface FloatingToolbarProps {
   onTemplateDelete: (id: string) => void;
   onFillAndDownload: () => void;
   isProcessing: boolean;
+  movable: boolean;
+  onMovableToggle: () => void;
 }
 
 const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
@@ -34,6 +36,8 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   onTemplateDelete,
   onFillAndDownload,
   isProcessing,
+  movable,
+  onMovableToggle,
 }) => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [showFieldEditor, setShowFieldEditor] = useState(false);
@@ -143,26 +147,46 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       {/* Floating Toolbar */}
       <div className="floating-toolbar">
         <div className="toolbar-icons">
-          <button
-            className={`toolbar-icon ${activePanel === 'fields' ? 'active' : ''}`}
-            onClick={() => togglePanel('fields')}
-            title="Fields"
-          >
-            📝
-          </button>
-          <button
-            className={`toolbar-icon ${activePanel === 'templates' ? 'active' : ''}`}
-            onClick={() => togglePanel('templates')}
-            title="Templates"
-          >
-            💾
-          </button>
+          {movable && (
+            <button
+              className={`toolbar-icon ${activePanel === 'fields' ? 'active' : ''}`}
+              onClick={() => togglePanel('fields')}
+              title="Fields"
+            >
+              📝
+            </button>
+          )}
+          {movable && (
+            <button
+              className={`toolbar-icon ${activePanel === 'templates' ? 'active' : ''}`}
+              onClick={() => togglePanel('templates')}
+              title="Templates"
+            >
+              💾
+            </button>
+          )}
+          {!movable && (
+            <button
+              className={`toolbar-icon ${activePanel === 'form' ? 'active' : ''}`}
+              onClick={() => togglePanel('form')}
+              title="Fill Form"
+            >
+              📝
+            </button>
+          )}
           <button
             className={`toolbar-icon ${activePanel === 'download' ? 'active' : ''}`}
             onClick={() => togglePanel('download')}
             title="Download"
           >
             📄
+          </button>
+          <button
+            className={`toolbar-icon ${movable ? 'active' : ''}`}
+            onClick={onMovableToggle}
+            title={movable ? 'Exit Edit Mode' : 'Enter Edit Mode'}
+          >
+            {movable ? '🔒' : '✏️'}
           </button>
         </div>
 
@@ -242,6 +266,35 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               >
                 Load Template
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Form Panel for normal users */}
+        {!movable && activePanel === 'form' && (
+          <div className="toolbar-panel">
+            <div className="panel-header">
+              <h3>Fill Form ({fields.length} fields)</h3>
+              <button className="close-panel" onClick={() => setActivePanel(null)}>×</button>
+            </div>
+            <div className="fields-list">
+              {fields.length === 0 ? (
+                <div className="empty-state">
+                  <p>No fields available. Contact administrator to add fields.</p>
+                </div>
+              ) : (
+                fields.map((field) => (
+                  <div key={field.id} className="field-item">
+                    <div className="field-header">
+                      <span className="field-icon">{getFieldTypeIcon(field.type)}</span>
+                      <span className="field-label">{field.label}</span>
+                    </div>
+                    <div className="field-input">
+                      {renderFormInput(field)}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

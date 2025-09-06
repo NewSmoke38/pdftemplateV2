@@ -14,6 +14,7 @@ function App() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [movable, setMovable] = useState<boolean>(false); // Controls if fields can be created/moved
 
   // Load PDF file directly on component mount
   useEffect(() => {
@@ -243,6 +244,7 @@ function App() {
                 onFieldDelete={handleFieldDelete}
                 selectedFieldId={selectedFieldId}
                 onFieldSelect={handleFieldSelect}
+                movable={movable}
               />
             </div>
           </div>
@@ -274,6 +276,8 @@ function App() {
           onTemplateDelete={handleTemplateDelete}
           onFillAndDownload={handleFillAndDownload}
           isProcessing={isProcessing}
+          movable={movable}
+          onMovableToggle={() => setMovable(!movable)}
         />
       )}
     </div>
