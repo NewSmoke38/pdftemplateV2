@@ -93,6 +93,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     onTemplateLoad(template);
     setShowTemplates(false);
   };
+console.log("dummy");
 
   const handleDeleteTemplate = (id: string) => {
     if (window.confirm('Are you sure you want to delete this template?')) {
