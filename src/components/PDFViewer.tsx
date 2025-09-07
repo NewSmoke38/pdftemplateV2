@@ -50,6 +50,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState<string>('');
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState<boolean>(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -94,6 +95,53 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       document.removeEventListener('touchend', handleGlobalMouseUp);
     };
   }, [isDragging]);
+
+  // Add keyboard controls for field positioning
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!movable || !selectedFieldId) return;
+
+      const field = fields.find(f => f.id === selectedFieldId);
+      if (!field) return;
+
+      const step = event.shiftKey ? 10 : 1; // Shift for larger steps
+      let newX = field.x;
+      let newY = field.y;
+
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          newY = Math.max(0, field.y - step);
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          newY = field.y + step;
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          newX = Math.max(0, field.x - step);
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          newX = field.x + step;
+          break;
+        case 'Delete':
+        case 'Backspace':
+          event.preventDefault();
+          onFieldDelete(selectedFieldId);
+          return;
+        default:
+          return;
+      }
+
+      onFieldUpdate(selectedFieldId, { x: newX, y: newY });
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [movable, selectedFieldId, fields, onFieldUpdate, onFieldDelete]);
 
   const handlePageClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     console.log('🖱️ PDFViewer: handlePageClick called', { isAddingField, dragStart, fieldsLength: fields.length, movable });
@@ -240,6 +288,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const handleFieldClick = (event: React.MouseEvent, fieldId: string) => {
     event.stopPropagation();
     onFieldSelect(fieldId);
+    if (movable) {
+      setShowKeyboardHelp(true);
+      // Hide help after 3 seconds
+      setTimeout(() => setShowKeyboardHelp(false), 3000);
+    }
   };
 
   const handleFieldDoubleClick = (event: React.MouseEvent, fieldId: string) => {
@@ -553,6 +606,29 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </div>
         )}
       </div>
+
+      {/* Keyboard Help Tooltip */}
+      {showKeyboardHelp && selectedFieldId && movable && (
+        <div className="keyboard-help-tooltip">
+          <div className="keyboard-help-content">
+            <h4>⌨️ Keyboard Controls</h4>
+            <div className="keyboard-shortcuts">
+              <div className="shortcut-item">
+                <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>
+                <span>Move field (1px)</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>Shift</kbd> + <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>
+                <span>Move field (10px)</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>Delete</kbd> / <kbd>Backspace</kbd>
+                <span>Delete field</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
