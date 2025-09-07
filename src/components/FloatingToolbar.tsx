@@ -226,13 +226,13 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               📄
             </button>
           )}
-          <button
+          {/* <button
             className={`toolbar-icon ${movable ? 'active' : ''}`}
             onClick={onMovableToggle}
             title={movable ? 'Exit Edit Mode' : 'Enter Edit Mode'}
           >
             {movable ? '🔒' : '✏️'}
-          </button>
+          </button> */}
         </div>
 
         {/* Fields Panel */}
