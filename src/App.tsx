@@ -19,68 +19,85 @@ function App() {
   // Fields for different pages - Page 1 fields
   const staticFields: FieldPosition[] = [
     {
-      "id": "field_1757173175436",
-      "x": 138.0113639831543,
-      "y": 147.84091186523438,
-      "width": 100,
+      "id": "field_1757231747796",
+      "x": 140.44602584838867,
+      "y": 146.84091186523438,
+      "width": 302,
       "height": 20,
-      "label": "Page 1 Field 1",
+      "label": "Field 1",
       "type": "text",
       "pageNumber": 1
     },
     {
-      "id": "field_1757175562002",
-      "x": 186.0113639831543,
-      "y": 204.84091186523438,
-      "width": 100,
+      "id": "field_1757231755821",
+      "x": 92.77415084838867,
+      "y": 170.84091186523438,
+      "width": 350,
       "height": 20,
       "label": "Field 2",
       "type": "text",
-      "pageNumber": 2
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757231762714",
+      "x": 181.6519889831543,
+      "y": 193.84091186523438,
+      "width": 100,
+      "height": 20,
+      "label": "Field 3",
+      "type": "text",
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757231779180",
+      "x": 142.4673309326172,
+      "y": 250.84091186523438,
+      "width": 396,
+      "height": 20,
+      "label": "Field 4",
+      "type": "text",
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757231787912",
+      "x": 147.33238983154297,
+      "y": 272.8409118652344,
+      "width": 391,
+      "height": 20,
+      "label": "Field 5",
+      "type": "text",
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757231797700",
+      "x": 106.5383529663086,
+      "y": 293.8409118652344,
+      "width": 175,
+      "height": 20,
+      "label": "Field 6",
+      "type": "text",
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757231812429",
+      "x": 163.3892059326172,
+      "y": 313.8409118652344,
+      "width": 375,
+      "height": 20,
+      "label": "Field 7",
+      "type": "text",
+      "pageNumber": 1
+    },
+    {
+      "id": "field_1757231818844",
+      "x": 145.9289779663086,
+      "y": 336.8409118652344,
+      "width": 100,
+      "height": 20,
+      "label": "Field 8",
+      "type": "text",
+      "pageNumber": 1
     }
-    // Add more fields for page 1 here
-    // {
-    //   "id": "field_page1_2",
-    //   "x": 200,
-    //   "y": 200,
-    //   "width": 120,
-    //   "height": 25,
-    //   "label": "Page 1 Field 2",
-    //   "type": "text",
-    //   "pageNumber": 1
-    // },
-    
-    // Fields for page 2 (main1.pdf content) - Uncomment to add fields for page 2
-    // {
-    //   "id": "field_page2_1",
-    //   "x": 150,
-    //   "y": 100,
-    //   "width": 100,
-    //   "height": 20,
-    //   "label": "Page 2 Field 1",
-    //   "type": "text",
-    //   "pageNumber": 2
-    // },
-    // {
-    //   "id": "field_page2_2",
-    //   "x": 150,
-    //   "y": 150,
-    //   "width": 100,
-    //   "height": 20,
-    //   "label": "Page 2 Field 2",
-    //   "type": "date",
-    //   "pageNumber": 2
-    // },
-    // {
-    //   "id": "field_page2_3",
-    //   "x": 150,
-    //   "y": 200,
-    //   "width": 100,
-    //   "height": 20,
-    //   "label": "Page 2 Field 3",
-    //   "type": "number",
-    //   "pageNumber": 2
-    // }
   ];
 
   // Load and merge PDF files directly on component mount
