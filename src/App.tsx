@@ -113,7 +113,7 @@ function App() {
     {
         "id": "field_1757250592332",
         "x": 373.8984375,
-        "y": 404.7265625,
+        "y": 403.7265625,
         "width": 210,
         "height": 20,
         "label": "Declaration Date",
