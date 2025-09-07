@@ -5,6 +5,8 @@ import FloatingToolbar from './components/FloatingToolbar';
 import { PDFFiller } from './utils/pdfFiller';
 import './App.css';
 
+
+
 function App() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [fields, setFields] = useState<FieldPosition[]>([]);
@@ -19,69 +21,106 @@ function App() {
   // Fields for different pages - Page 1 fields
   const staticFields: FieldPosition[] = [
     {
-      "id": "field_1757173175436",
-      "x": 138.0113639831543,
-      "y": 147.84091186523438,
-      "width": 100,
-      "height": 20,
-      "label": "Page 1 Field 1",
-      "type": "text",
-      "pageNumber": 1
+        "id": "field_1757231747796",
+        "x": 134.44602584838867,
+        "y": 148.84091186523438,
+        "width": 302,
+        "height": 20,
+        "label": "Student Name",
+        "type": "text",
+        "pageNumber": 1
     },
     {
-      "id": "field_1757175562002",
-      "x": 186.0113639831543,
-      "y": 204.84091186523438,
-      "width": 100,
-      "height": 20,
-      "label": "Field 2",
-      "type": "text",
-      "pageNumber": 2
+        "id": "field_1757231755821",
+        "x": 92.77415084838867,
+        "y": 170.84091186523438,
+        "width": 350,
+        "height": 20,
+        "label": "URN",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757231762714",
+        "x": 181.6519889831543,
+        "y": 193.84091186523438,
+        "width": 100,
+        "height": 20,
+        "label": "Div",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757231779180",
+        "x": 137.4673309326172,
+        "y": 246.84091186523438,
+        "width": 396,
+        "height": 20,
+        "label": "Activity Name",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757231787912",
+        "x": 145.33238983154297,
+        "y": 268.8409118652344,
+        "width": 391,
+        "height": 20,
+        "label": "Types of Activity",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757231812429",
+        "x": 161.3892059326172,
+        "y": 310.8409118652344,
+        "width": 375,
+        "height": 20,
+        "label": "Place/Org",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757231818844",
+        "x": 139.9289779663086,
+        "y": 332.8409118652344,
+        "width": 100,
+        "height": 20,
+        "label": "Claimed Hours",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757250271849",
+        "x": 307.8984375,
+        "y": 524.7265625,
+        "width": 132,
+        "height": 20,
+        "label": "Approved Hours",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757250507299",
+        "x": 102.8984375,
+        "y": 289.7265625,
+        "width": 100,
+        "height": 20,
+        "label": "Activity Date",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757250592332",
+        "x": 373.8984375,
+        "y": 403.7265625,
+        "width": 210,
+        "height": 20,
+        "label": "Declaration Date",
+        "type": "text",
+        "pageNumber": 1
     }
-    // Add more fields for page 1 here
-    // {
-    //   "id": "field_page1_2",
-    //   "x": 200,
-    //   "y": 200,
-    //   "width": 120,
-    //   "height": 25,
-    //   "label": "Page 1 Field 2",
-    //   "type": "text",
-    //   "pageNumber": 1
-    // },
-    
-    // Fields for page 2 (main1.pdf content) - Uncomment to add fields for page 2
-    // {
-    //   "id": "field_page2_1",
-    //   "x": 150,
-    //   "y": 100,
-    //   "width": 100,
-    //   "height": 20,
-    //   "label": "Page 2 Field 1",
-    //   "type": "text",
-    //   "pageNumber": 2
-    // },
-    // {
-    //   "id": "field_page2_2",
-    //   "x": 150,
-    //   "y": 150,
-    //   "width": 100,
-    //   "height": 20,
-    //   "label": "Page 2 Field 2",
-    //   "type": "date",
-    //   "pageNumber": 2
-    // },
-    // {
-    //   "id": "field_page2_3",
-    //   "x": 150,
-    //   "y": 200,
-    //   "width": 100,
-    //   "height": 20,
-    //   "label": "Page 2 Field 3",
-    //   "type": "number",
-    //   "pageNumber": 2
-    // }
-  ];
+]
 
   // Load and merge PDF files directly on component mount
   useEffect(() => {

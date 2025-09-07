@@ -41,17 +41,39 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isAddingField, setIsAddingField] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [newField, setNewField] = useState<Partial<FieldPosition> | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragFieldId, setDragFieldId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState<string>('');
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState<boolean>(false);
   const pageRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   };
+
+  // Detect mobile and set appropriate scale
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile && scale > 0.8) {
+        setScale(0.8); // Set smaller scale for mobile
+      } else if (!mobile && scale < 1.0) {
+        setScale(1.0); // Reset to normal scale for desktop
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [scale]);
 
   // Add global mouse up listener to handle dragging outside the container
   useEffect(() => {
@@ -74,14 +96,61 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     };
   }, [isDragging]);
 
+  // Add keyboard controls for field positioning
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!movable || !selectedFieldId) return;
+
+      const field = fields.find(f => f.id === selectedFieldId);
+      if (!field) return;
+
+      const step = event.shiftKey ? 10 : 1; // Shift for larger steps
+      let newX = field.x;
+      let newY = field.y;
+
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          newY = Math.max(0, field.y - step);
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          newY = field.y + step;
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          newX = Math.max(0, field.x - step);
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          newX = field.x + step;
+          break;
+        case 'Delete':
+        case 'Backspace':
+          event.preventDefault();
+          onFieldDelete(selectedFieldId);
+          return;
+        default:
+          return;
+      }
+
+      onFieldUpdate(selectedFieldId, { x: newX, y: newY });
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [movable, selectedFieldId, fields, onFieldUpdate, onFieldDelete]);
+
   const handlePageClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     console.log('🖱️ PDFViewer: handlePageClick called', { isAddingField, dragStart, fieldsLength: fields.length, movable });
     
     if (!movable || !isAddingField || !pageRef.current) return;
 
     const rect = pageRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const x = (event.clientX - rect.left) / scale;
+    const y = (event.clientY - rect.top) / scale;
 
     console.log('📍 PDFViewer: Mouse position calculated', { x, y, rect });
 
@@ -121,7 +190,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setNewField(null);
       console.log('🔄 PDFViewer: Field creation completed, resetting state');
     }
-  }, [movable, isAddingField, dragStart, fields.length, onFieldAdd]);
+  }, [movable, isAddingField, dragStart, fields.length, onFieldAdd, scale, pageNumber]);
 
   // Touch support for mobile devices
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
@@ -129,8 +198,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     
     const touch = event.touches[0];
     const rect = pageRef.current.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    const x = (touch.clientX - rect.left) / scale;
+    const y = (touch.clientY - rect.top) / scale;
 
     if (!dragStart) {
       setDragStart({ x, y });
@@ -143,7 +212,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         type: 'text',
       });
     }
-  }, [isAddingField, dragStart, fields.length]);
+  }, [isAddingField, dragStart, fields.length, scale]);
 
   const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (isDragging) {
@@ -153,8 +222,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     } else if (isAddingField && dragStart && pageRef.current) {
       const touch = event.changedTouches[0];
       const rect = pageRef.current.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
+      const x = (touch.clientX - rect.left) / scale;
+      const y = (touch.clientY - rect.top) / scale;
 
       const width = Math.abs(x - dragStart.x);
       const height = Math.abs(y - dragStart.y);
@@ -177,7 +246,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setDragStart(null);
       setNewField(null);
     }
-  }, [isDragging, isAddingField, dragStart, fields.length, onFieldAdd]);
+  }, [isDragging, isAddingField, dragStart, fields.length, onFieldAdd, scale, pageNumber]);
 
   const handleFieldTouchStart = useCallback((event: React.TouchEvent, fieldId: string) => {
     event.stopPropagation();
@@ -188,8 +257,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
     const touch = event.touches[0];
     const rect = pageRef.current.getBoundingClientRect();
-    const touchX = touch.clientX - rect.left;
-    const touchY = touch.clientY - rect.top;
+    const touchX = (touch.clientX - rect.left) / scale;
+    const touchY = (touch.clientY - rect.top) / scale;
 
     // Calculate offset from touch to field position
     const offsetX = touchX - field.x;
@@ -199,26 +268,73 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     setDragFieldId(fieldId);
     setDragOffset({ x: offsetX, y: offsetY });
     onFieldSelect(fieldId);
-  }, [movable, fields, onFieldSelect]);
+  }, [movable, fields, onFieldSelect, scale]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (isDragging && dragFieldId && dragOffset && pageRef.current) {
       const touch = event.touches[0];
       const rect = pageRef.current.getBoundingClientRect();
-      const touchX = touch.clientX - rect.left;
-      const touchY = touch.clientY - rect.top;
+      const touchX = (touch.clientX - rect.left) / scale;
+      const touchY = (touch.clientY - rect.top) / scale;
 
       const newX = touchX - dragOffset.x;
       const newY = touchY - dragOffset.y;
 
       onFieldUpdate(dragFieldId, { x: newX, y: newY });
     }
-  }, [isDragging, dragFieldId, dragOffset, onFieldUpdate]);
+  }, [isDragging, dragFieldId, dragOffset, onFieldUpdate, scale]);
 
 
   const handleFieldClick = (event: React.MouseEvent, fieldId: string) => {
     event.stopPropagation();
     onFieldSelect(fieldId);
+    if (movable) {
+      setShowKeyboardHelp(true);
+      // Hide help after 3 seconds
+      setTimeout(() => setShowKeyboardHelp(false), 3000);
+    }
+  };
+
+  const handleFieldDoubleClick = (event: React.MouseEvent, fieldId: string) => {
+    event.stopPropagation();
+    if (!movable) return;
+    
+    const field = fields.find(f => f.id === fieldId);
+    if (!field) return;
+    
+    setEditingFieldId(fieldId);
+    setEditingLabel(field.label);
+    
+    // Focus the input after a short delay to ensure it's rendered
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, 10);
+  };
+
+  const handleLabelSave = () => {
+    if (editingFieldId && editingLabel.trim()) {
+      onFieldUpdate(editingFieldId, { label: editingLabel.trim() });
+    }
+    setEditingFieldId(null);
+    setEditingLabel('');
+  };
+
+  const handleLabelCancel = () => {
+    setEditingFieldId(null);
+    setEditingLabel('');
+  };
+
+  const handleLabelKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleLabelSave();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      handleLabelCancel();
+    }
   };
 
   const handleFieldMouseDown = (event: React.MouseEvent, fieldId: string) => {
@@ -229,8 +345,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (!field) return;
 
     const rect = pageRef.current.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const mouseX = (event.clientX - rect.left) / scale;
+    const mouseY = (event.clientY - rect.top) / scale;
 
     // Calculate offset from mouse to field position
     const offsetX = mouseX - field.x;
@@ -245,8 +361,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging && dragFieldId && dragOffset && pageRef.current) {
       const rect = pageRef.current.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
+      const mouseX = (event.clientX - rect.left) / scale;
+      const mouseY = (event.clientY - rect.top) / scale;
 
       const newX = mouseX - dragOffset.x;
       const newY = mouseY - dragOffset.y;
@@ -254,8 +370,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       onFieldUpdate(dragFieldId, { x: newX, y: newY });
     } else if (isAddingField && dragStart && newField && pageRef.current) {
       const rect = pageRef.current.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const x = (event.clientX - rect.left) / scale;
+      const y = (event.clientY - rect.top) / scale;
 
       const width = Math.abs(x - dragStart.x);
       const height = Math.abs(y - dragStart.y);
@@ -270,7 +386,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         height: Math.max(height, 20),
       });
     }
-  }, [isDragging, dragFieldId, dragOffset, isAddingField, dragStart, newField, onFieldUpdate]);
+  }, [isDragging, dragFieldId, dragOffset, isAddingField, dragStart, newField, onFieldUpdate, scale]);
 
   const handleMouseUp = useCallback(() => {
     if (isDragging) {
@@ -285,8 +401,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (!pageRef.current) return;
 
     const rect = pageRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const x = (event.clientX - rect.left) / scale;
+    const y = (event.clientY - rect.top) / scale;
 
     const field = fields.find(f => f.id === fieldId);
     if (!field) return;
@@ -358,9 +474,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </button>
         </div>
         <div className="scale-controls">
-          <button onClick={() => setScale(Math.max(0.5, scale - 0.1))}>-</button>
+          <button onClick={() => setScale(Math.max(0.3, scale - 0.1))}>-</button>
           <span>{Math.round(scale * 100)}%</span>
-          <button onClick={() => setScale(Math.min(2.0, scale + 0.1))}>+</button>
+          <button onClick={() => setScale(Math.min(isMobile ? 1.2 : 2.0, scale + 0.1))}>+</button>
         </div>
       </div>
 
@@ -395,13 +511,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             {fields.filter(field => field.pageNumber === pageNumber).map((field) => (
               <div
                 key={field.id}
-                className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''}`}
+                className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''} ${editingFieldId === field.id ? 'editing' : ''} ${movable ? 'movable' : ''}`}
                 style={{
                   position: 'absolute',
-                  left: field.x,
-                  top: field.y,
-                  width: field.width,
-                  height: field.height,
+                  left: field.x * scale,
+                  top: field.y * scale,
+                  width: field.width * scale,
+                  height: field.height * scale,
                   border: '2px dashed #007bff',
                   backgroundColor: 'rgba(0, 123, 255, 0.1)',
                   cursor: movable ? 'move' : 'default',
@@ -413,10 +529,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   fontWeight: 'bold',
                 }}
                 onClick={(e) => handleFieldClick(e, field.id)}
+                onDoubleClick={(e) => handleFieldDoubleClick(e, field.id)}
                 onMouseDown={(e) => handleFieldMouseDown(e, field.id)}
                 onTouchStart={(e) => handleFieldTouchStart(e, field.id)}
               >
-                {field.label}
+                {editingFieldId === field.id ? (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editingLabel}
+                    onChange={(e) => setEditingLabel(e.target.value)}
+                    onBlur={handleLabelSave}
+                    onKeyDown={handleLabelKeyDown}
+                    className="field-edit-input"
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  field.label
+                )}
                 {selectedFieldId === field.id && movable && (
                   <>
                     <div
@@ -455,10 +586,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 className="field-overlay new"
                 style={{
                   position: 'absolute',
-                  left: newField.x,
-                  top: newField.y,
-                  width: newField.width,
-                  height: newField.height,
+                  left: (newField.x || 0) * scale,
+                  top: (newField.y || 0) * scale,
+                  width: (newField.width || 0) * scale,
+                  height: (newField.height || 0) * scale,
                   border: '2px dashed #28a745',
                   backgroundColor: 'rgba(40, 167, 69, 0.1)',
                   display: 'flex',
@@ -475,6 +606,29 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </div>
         )}
       </div>
+
+      {/* Keyboard Help Tooltip */}
+      {showKeyboardHelp && selectedFieldId && movable && (
+        <div className="keyboard-help-tooltip">
+          <div className="keyboard-help-content">
+            <h4>⌨️ Keyboard Controls</h4>
+            <div className="keyboard-shortcuts">
+              <div className="shortcut-item">
+                <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>
+                <span>Move field (1px)</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>Shift</kbd> + <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>
+                <span>Move field (10px)</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>Delete</kbd> / <kbd>Backspace</kbd>
+                <span>Delete field</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { type FieldPosition } from './PDFViewer';
 import { type Template } from './TemplateManager';
+import dayjs from 'dayjs';
 
 interface FloatingToolbarProps {
   fields: FieldPosition[];
@@ -46,6 +47,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
 
   const togglePanel = (panel: string) => {
     setActivePanel(activePanel === panel ? null : panel);
@@ -109,34 +111,38 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
   const renderFormInput = (field: FieldPosition) => {
     const value = formData[field.id] || '';
+    const isFilled = value && value.trim() !== '';
+
+    const commonProps = {
+      className: `form-input ${isFilled ? 'filled' : ''}`,
+      placeholder: `Enter ${field.label.toLowerCase()}...`,
+      value,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onFormDataChange(field.id, e.target.value),
+    };
 
     switch (field.type) {
       case 'date':
         return (
           <input
             type="date"
-            value={value}
+            {...commonProps}
+            value={value ? dayjs(value).format('YYYY-MM-DD') : ''}
             onChange={(e) => onFormDataChange(field.id, e.target.value)}
-            className="form-input"
           />
         );
       case 'number':
         return (
           <input
+            {...commonProps}
             type="number"
-            value={value}
-            onChange={(e) => onFormDataChange(field.id, e.target.value)}
-            className="form-input"
+            placeholder="Enter number..."
           />
         );
       default:
         return (
           <input
+            {...commonProps}
             type="text"
-            value={value}
-            onChange={(e) => onFormDataChange(field.id, e.target.value)}
-            className="form-input"
-            placeholder={`Enter ${field.label.toLowerCase()}`}
           />
         );
     }
@@ -176,8 +182,8 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           )}
           {!movable && (
             <button
-              className={`toolbar-icon ${activePanel === 'form' ? 'active' : ''}`}
-              onClick={() => togglePanel('form')}
+              className="toolbar-icon"
+              onClick={() => setShowFormModal(true)}
               title="Fill Form"
             >
               📝
@@ -279,34 +285,6 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           </div>
         )}
 
-        {/* Form Panel for normal users */}
-        {!movable && activePanel === 'form' && (
-          <div className="toolbar-panel">
-            <div className="panel-header">
-              <h3>Fill Form ({fields.length} fields)</h3>
-              <button className="close-panel" onClick={() => setActivePanel(null)}>×</button>
-            </div>
-            <div className="fields-list">
-              {fields.length === 0 ? (
-                <div className="empty-state">
-                  <p>No fields available. Contact administrator to add fields.</p>
-                </div>
-              ) : (
-                fields.map((field) => (
-                  <div key={field.id} className="field-item">
-                    <div className="field-header">
-                      <span className="field-icon">{getFieldTypeIcon(field.type)}</span>
-                      <span className="field-label">{field.label}</span>
-                    </div>
-                    <div className="field-input">
-                      {renderFormInput(field)}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Download Panel */}
         {activePanel === 'download' && (
@@ -466,6 +444,71 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form Modal */}
+      {showFormModal && (
+        <div className="modal-overlay" onClick={() => setShowFormModal(false)}>
+          <div className="modal form-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📝 Fill Out Form</h3>
+              <button onClick={() => setShowFormModal(false)} className="close-modal">
+                &times;
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              {fields.length === 0 ? (
+                <div className="empty-state">
+                  <h4>📋 No Fields Available</h4>
+                  <p>Contact your administrator to add form fields to this document.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="form-summary">
+                    <p>
+                      <strong>{Object.keys(formData).filter(key => formData[key]).length}</strong> of{' '}
+                      <strong>{fields.length}</strong> fields completed
+                    </p>
+                  </div>
+                  
+                  <div className="form-fields">
+                    {fields.map((field) => (
+                      <div key={field.id} className="form-field-group">
+                        <div className="form-field-label">
+                           <label>{getFieldTypeIcon(field.type)} {field.label}</label>
+                          {formData[field.id] && formData[field.id].trim() !== '' && (
+                            <span className="chip success">✓</span>
+                          )}
+                        </div>
+                        {renderFormInput(field)}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {fields.length > 0 && (
+              <>
+                <div className="modal-actions">
+                  <button
+                    onClick={onFillAndDownload}
+                    disabled={isProcessing}
+                    className="button primary download-button"
+                  >
+                    {isProcessing ? (
+                      <div className="spinner" />
+                    ) : (
+                      '📄'
+                    )}
+                    {isProcessing ? 'Processing...' : 'Download Filled PDF'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
