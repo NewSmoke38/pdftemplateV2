@@ -5,6 +5,25 @@
   box-sizing: border-box;
 }
 
+/* Mobile viewport handling */
+html {
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+  /* Use full viewport height */
+  height: 100%;
+  /* Prevent zoom on double tap */
+  touch-action: manipulation;
+}
+
+/* Ensure proper mobile viewport */
+@media (max-width: 768px) {
+  html {
+    /* Use dynamic viewport height for mobile browsers */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for newer browsers */
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -14,6 +33,17 @@ body {
   background-color: #f5f7fa;
   color: #333;
   line-height: 1.6;
+  /* Mobile viewport fixes */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Prevent zoom on input focus on iOS */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* App layout */
@@ -22,6 +52,7 @@ body {
   display: flex;
   flex-direction: column;
   background-color: #f5f7fa;
+  position: relative;
 }
 
 .app-content {
@@ -29,6 +60,7 @@ body {
   padding: 1rem;
   width: 100%;
   padding-bottom: 120px; /* Space for floating toolbar */
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Loading section */
@@ -259,6 +291,10 @@ body {
   overflow: auto;
   padding: 1rem;
   background: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 0; /* Allow flex shrinking */
 }
 
 .pdf-page-container {
@@ -268,6 +304,8 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* Field overlays */
@@ -285,6 +323,10 @@ body {
   transition: all 0.2s ease;
   user-select: none;
   touch-action: none; /* Prevent default touch behaviors */
+  /* Mobile touch improvements */
+  -webkit-tap-highlight-color: transparent;
+  min-width: 20px;
+  min-height: 20px;
 }
 
 .field-overlay.dragging {
@@ -853,6 +895,10 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  max-width: 100vw;
+  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 .toolbar-icons {
@@ -864,6 +910,9 @@ body {
   padding: 0.5rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
 }
 
 .toolbar-icon {
@@ -1047,7 +1096,8 @@ body {
 @media (max-width: 768px) {
   .app-content {
     padding: 0.5rem;
-    padding-bottom: 140px; /* More space for floating toolbar on mobile */
+    padding-bottom: 160px; /* More space for floating toolbar on mobile */
+    padding-top: 0.5rem; /* Ensure top spacing */
   }
 
   .section-header {
@@ -1055,6 +1105,12 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+    margin: -0.5rem -0.5rem 1rem -0.5rem;
   }
 
   .section-header h2 {
@@ -1075,6 +1131,7 @@ body {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
+    padding: 0.75rem;
   }
 
   .pdf-controls button {
@@ -1089,6 +1146,34 @@ body {
 
   .pdf-container {
     padding: 0.5rem;
+    min-height: calc(100vh - 200px); /* Ensure proper height */
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  .pdf-page-container {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 250px);
+  }
+
+  /* Mobile field overlay improvements */
+  .field-overlay {
+    font-size: 10px;
+    min-width: 30px;
+    min-height: 25px;
+  }
+
+  .resize-handle {
+    width: 12px;
+    height: 12px;
+  }
+
+  .delete-field {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+    top: -12px;
+    right: -12px;
   }
 
   .toolbar-panel {
@@ -1096,6 +1181,7 @@ body {
     max-width: 95vw;
     padding: 1rem;
     margin: 0 2.5vw;
+    max-height: 50vh;
   }
 
   .toolbar-icon {
@@ -1105,7 +1191,11 @@ body {
   }
 
   .floating-toolbar {
-    bottom: 15px;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
   }
 
   .modal {
@@ -1128,12 +1218,92 @@ body {
 }
 
 @media (max-width: 480px) {
-  .app-header h1 {
-    font-size: 1.5rem;
+  .app-content {
+    padding: 0.25rem;
+    padding-bottom: 180px; /* Even more space for very small screens */
   }
 
-  .app-header p {
+  .section-header {
+    padding: 0.75rem;
+    margin: -0.25rem -0.25rem 0.75rem -0.25rem;
+  }
+
+  .section-header h2 {
     font-size: 1rem;
+  }
+
+  .field-stats {
+    gap: 0.25rem;
+  }
+
+  .field-stats span {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+  }
+
+  .pdf-controls {
+    padding: 0.5rem;
+  }
+
+  .pdf-controls button {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .pdf-container {
+    padding: 0.25rem;
+    min-height: calc(100vh - 180px);
+  }
+
+  .pdf-page-container {
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100vh - 220px);
+  }
+
+  /* Very small mobile field overlay improvements */
+  .field-overlay {
+    font-size: 9px;
+    min-width: 25px;
+    min-height: 20px;
+  }
+
+  .resize-handle {
+    width: 10px;
+    height: 10px;
+  }
+
+  .delete-field {
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    top: -10px;
+    right: -10px;
+  }
+
+  .toolbar-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .floating-toolbar {
+    bottom: 5px;
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+  }
+
+  .toolbar-panel {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 0.75rem;
+    margin: 0 1vw;
+    max-height: 45vh;
+  }
+
+  .modal {
+    margin: 0.5rem;
+    padding: 1rem;
+    max-width: 98vw;
   }
 
   .upload-label {

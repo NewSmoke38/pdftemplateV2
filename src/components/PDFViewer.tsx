@@ -41,6 +41,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isAddingField, setIsAddingField] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [newField, setNewField] = useState<Partial<FieldPosition> | null>(null);
@@ -52,6 +53,23 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   };
+
+  // Detect mobile and set appropriate scale
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile && scale > 0.8) {
+        setScale(0.8); // Set smaller scale for mobile
+      } else if (!mobile && scale < 1.0) {
+        setScale(1.0); // Reset to normal scale for desktop
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [scale]);
 
   // Add global mouse up listener to handle dragging outside the container
   useEffect(() => {
@@ -358,9 +376,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </button>
         </div>
         <div className="scale-controls">
-          <button onClick={() => setScale(Math.max(0.5, scale - 0.1))}>-</button>
+          <button onClick={() => setScale(Math.max(0.3, scale - 0.1))}>-</button>
           <span>{Math.round(scale * 100)}%</span>
-          <button onClick={() => setScale(Math.min(2.0, scale + 0.1))}>+</button>
+          <button onClick={() => setScale(Math.min(isMobile ? 1.2 : 2.0, scale + 0.1))}>+</button>
         </div>
       </div>
 
