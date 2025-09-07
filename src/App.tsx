@@ -491,16 +491,6 @@ const dummyData: Record<string, string> = {
       return;
     }
 
-    console.log('🔍 App: Validating form data', { fields, formData });
-    const validation = PDFFiller.validateFormData(fields, formData);
-    console.log('🔍 App: Validation result', validation);
-    
-    if (!validation.isValid) {
-      console.log('❌ App: Validation failed', validation.errors);
-      showNotification('error', `Validation failed: ${validation.errors.join(', ')}`);
-      return;
-    }
-
     console.log('⚙️ App: Starting PDF processing');
     setIsProcessing(true);
     try {
@@ -559,7 +549,7 @@ const dummyData: Record<string, string> = {
       )}
 
       <div className="app-content">
-        <button onClick={handleFillWithDummyData} style={{ marginBottom: '1rem' }}>Fill with Dummy Data</button>
+        {/* <button onClick={handleFillWithDummyData} style={{ marginBottom: '1rem' }}>Fill with Dummy Data</button> */}
         {pdfFile ? (
           <div className="main-workspace">
             <div className="pdf-section">

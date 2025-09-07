@@ -294,50 +294,6 @@ export class PDFFiller {
     return result;
   }
 
-  // Utility method to validate form data
-  static validateFormData(fields: FieldPosition[], formData: Record<string, string>): {
-    isValid: boolean;
-    errors: string[];
-  } {
-    console.log('🔍 PDFFiller: validateFormData called', { fields, formData });
-    const errors: string[] = [];
-
-    for (const field of fields) {
-      const value = formData[field.id];
-      console.log('🔍 PDFFiller: Validating field', { field, value });
-      
-      if (!value || value.trim() === '') {
-        console.log('❌ PDFFiller: Field is empty', field.label);
-        errors.push(`Field "${field.label}" is required`);
-        continue;
-      }
-
-      // Type-specific validation
-      switch (field.type) {
-        case 'number':
-          if (isNaN(Number(value))) {
-            console.log('❌ PDFFiller: Field is not a valid number', field.label, value);
-            errors.push(`Field "${field.label}" must be a valid number`);
-          }
-          break;
-        case 'date':
-          if (isNaN(Date.parse(value))) {
-            console.log('❌ PDFFiller: Field is not a valid date', field.label, value);
-            errors.push(`Field "${field.label}" must be a valid date`);
-          }
-          break;
-      }
-    }
-
-    const result = {
-      isValid: errors.length === 0,
-      errors,
-    };
-
-    console.log('🔍 PDFFiller: Validation result', result);
-    return result;
-  }
-
   // Method to get field statistics
   static getFieldStats(fields: FieldPosition[], formData: Record<string, string>) {
     const totalFields = fields.length;
