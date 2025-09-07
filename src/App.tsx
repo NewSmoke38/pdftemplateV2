@@ -235,41 +235,41 @@ function App() {
     }
 ]
 
-const dummyData: Record<string, string> = {
-  "field_1757231747796": "Shivani Sharma",
-  "field_1757231755821": "2110992222",
-  "field_1757231762714": "BE-11",
-  "field_1757231779180": "Won 1st prize in hackathon",
-  "field_1757231787912": "Technical",
-  "field_1757256306444": "2024-01-15",
-  "field_1757231812429": "Chandigarh University",
-  "field_1757256296778": "10",
-  "field_1757250271849": "10",
-  "field_1757250592332": "2024-01-20",
-  "field_1757256490526": "Technical",
-  "field_1757256521542": "Shivani Sharma",
-  "field_1757256539025": "BE-11",
-  "field_1757256554758": "2024-01-15",
-  "field_1757256570626": "10:00 AM",
-  "field_1757256580259": "Chandigarh University",
-  "field_1757256590911": "Dr. APJ Abdul Kalam Block",
-  "field_1757256604563": "Dr. S.S. Bhatnagar",
-  "field_1757256681412": `1. To win the hackathon.
-2. To learn new technologies.
-3. To work in a team.
-4. To solve a real-world problem.
-5. To have fun.`,
-  "field_1757256720515": `1. We started by brainstorming ideas.
-2. We then created a plan and divided the work.
-3. We worked on the project for 24 hours straight.
-4. We faced many challenges but we overcame them.
-5. We finally completed the project and presented it to the judges.`,
-  "field_1757256794979": `1. We won the first prize in the hackathon.
-2. We learned a lot of new things.
-3. We worked as a team and supported each other.
-4. We are proud of our project and what we accomplished.
-5. We are now more confident in our abilities.`,
-};
+// const dummyData: Record<string, string> = {
+//   "field_1757231747796": "Shivani Sharma",
+//   "field_1757231755821": "2110992222",
+//   "field_1757231762714": "BE-11",
+//   "field_1757231779180": "Won 1st prize in hackathon",
+//   "field_1757231787912": "Technical",
+//   "field_1757256306444": "2024-01-15",
+//   "field_1757231812429": "Chandigarh University",
+//   "field_1757256296778": "10",
+//   "field_1757250271849": "10",
+//   "field_1757250592332": "2024-01-20",
+//   "field_1757256490526": "Technical",
+//   "field_1757256521542": "Shivani Sharma",
+//   "field_1757256539025": "BE-11",
+//   "field_1757256554758": "2024-01-15",
+//   "field_1757256570626": "10:00 AM",
+//   "field_1757256580259": "Chandigarh University",
+//   "field_1757256590911": "Dr. APJ Abdul Kalam Block",
+//   "field_1757256604563": "Dr. S.S. Bhatnagar",
+//   "field_1757256681412": `1. To win the hackathon.
+// 2. To learn new technologies.
+// 3. To work in a team.
+// 4. To solve a real-world problem.
+// 5. To have fun.`,
+//   "field_1757256720515": `1. We started by brainstorming ideas.
+// 2. We then created a plan and divided the work.
+// 3. We worked on the project for 24 hours straight.
+// 4. We faced many challenges but we overcame them.
+// 5. We finally completed the project and presented it to the judges.`,
+//   "field_1757256794979": `1. We won the first prize in the hackathon.
+// 2. We learned a lot of new things.
+// 3. We worked as a team and supported each other.
+// 4. We are proud of our project and what we accomplished.
+// 5. We are now more confident in our abilities.`,
+// };
 
 
   // Load and merge PDF files directly on component mount
@@ -520,10 +520,10 @@ const dummyData: Record<string, string> = {
     }
   }, [pdfFile, fields, formData, showNotification]);
 
-  const handleFillWithDummyData = () => {
-    setFormData(dummyData);
-    showNotification('success', 'Form filled with dummy data!');
-  };
+  // const handleFillWithDummyData = () => {
+  //   setFormData(dummyData);
+  //   showNotification('success', 'Form filled with dummy data!');
+  // };
 
   const fieldStats = PDFFiller.getFieldStats(fields, formData);
 

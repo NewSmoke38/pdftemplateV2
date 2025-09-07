@@ -38,7 +38,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   onFillAndDownload,
   isProcessing,
   movable,
-  onMovableToggle,
+  // onMovableToggle,
   onExportFields,
 }) => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
