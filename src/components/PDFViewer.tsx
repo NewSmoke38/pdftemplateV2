@@ -80,8 +80,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (!movable || !isAddingField || !pageRef.current) return;
 
     const rect = pageRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const x = (event.clientX - rect.left) / scale;
+    const y = (event.clientY - rect.top) / scale;
 
     console.log('📍 PDFViewer: Mouse position calculated', { x, y, rect });
 
@@ -121,7 +121,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setNewField(null);
       console.log('🔄 PDFViewer: Field creation completed, resetting state');
     }
-  }, [movable, isAddingField, dragStart, fields.length, onFieldAdd]);
+  }, [movable, isAddingField, dragStart, fields.length, onFieldAdd, scale, pageNumber]);
 
   // Touch support for mobile devices
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
@@ -129,8 +129,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     
     const touch = event.touches[0];
     const rect = pageRef.current.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    const x = (touch.clientX - rect.left) / scale;
+    const y = (touch.clientY - rect.top) / scale;
 
     if (!dragStart) {
       setDragStart({ x, y });
@@ -143,7 +143,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         type: 'text',
       });
     }
-  }, [isAddingField, dragStart, fields.length]);
+  }, [isAddingField, dragStart, fields.length, scale]);
 
   const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (isDragging) {
@@ -153,8 +153,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     } else if (isAddingField && dragStart && pageRef.current) {
       const touch = event.changedTouches[0];
       const rect = pageRef.current.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
+      const x = (touch.clientX - rect.left) / scale;
+      const y = (touch.clientY - rect.top) / scale;
 
       const width = Math.abs(x - dragStart.x);
       const height = Math.abs(y - dragStart.y);
@@ -177,7 +177,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setDragStart(null);
       setNewField(null);
     }
-  }, [isDragging, isAddingField, dragStart, fields.length, onFieldAdd]);
+  }, [isDragging, isAddingField, dragStart, fields.length, onFieldAdd, scale, pageNumber]);
 
   const handleFieldTouchStart = useCallback((event: React.TouchEvent, fieldId: string) => {
     event.stopPropagation();
@@ -188,8 +188,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
     const touch = event.touches[0];
     const rect = pageRef.current.getBoundingClientRect();
-    const touchX = touch.clientX - rect.left;
-    const touchY = touch.clientY - rect.top;
+    const touchX = (touch.clientX - rect.left) / scale;
+    const touchY = (touch.clientY - rect.top) / scale;
 
     // Calculate offset from touch to field position
     const offsetX = touchX - field.x;
@@ -199,21 +199,21 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     setDragFieldId(fieldId);
     setDragOffset({ x: offsetX, y: offsetY });
     onFieldSelect(fieldId);
-  }, [movable, fields, onFieldSelect]);
+  }, [movable, fields, onFieldSelect, scale]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (isDragging && dragFieldId && dragOffset && pageRef.current) {
       const touch = event.touches[0];
       const rect = pageRef.current.getBoundingClientRect();
-      const touchX = touch.clientX - rect.left;
-      const touchY = touch.clientY - rect.top;
+      const touchX = (touch.clientX - rect.left) / scale;
+      const touchY = (touch.clientY - rect.top) / scale;
 
       const newX = touchX - dragOffset.x;
       const newY = touchY - dragOffset.y;
 
       onFieldUpdate(dragFieldId, { x: newX, y: newY });
     }
-  }, [isDragging, dragFieldId, dragOffset, onFieldUpdate]);
+  }, [isDragging, dragFieldId, dragOffset, onFieldUpdate, scale]);
 
 
   const handleFieldClick = (event: React.MouseEvent, fieldId: string) => {
@@ -229,8 +229,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (!field) return;
 
     const rect = pageRef.current.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const mouseX = (event.clientX - rect.left) / scale;
+    const mouseY = (event.clientY - rect.top) / scale;
 
     // Calculate offset from mouse to field position
     const offsetX = mouseX - field.x;
@@ -245,8 +245,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging && dragFieldId && dragOffset && pageRef.current) {
       const rect = pageRef.current.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
+      const mouseX = (event.clientX - rect.left) / scale;
+      const mouseY = (event.clientY - rect.top) / scale;
 
       const newX = mouseX - dragOffset.x;
       const newY = mouseY - dragOffset.y;
@@ -254,8 +254,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       onFieldUpdate(dragFieldId, { x: newX, y: newY });
     } else if (isAddingField && dragStart && newField && pageRef.current) {
       const rect = pageRef.current.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const x = (event.clientX - rect.left) / scale;
+      const y = (event.clientY - rect.top) / scale;
 
       const width = Math.abs(x - dragStart.x);
       const height = Math.abs(y - dragStart.y);
@@ -270,7 +270,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         height: Math.max(height, 20),
       });
     }
-  }, [isDragging, dragFieldId, dragOffset, isAddingField, dragStart, newField, onFieldUpdate]);
+  }, [isDragging, dragFieldId, dragOffset, isAddingField, dragStart, newField, onFieldUpdate, scale]);
 
   const handleMouseUp = useCallback(() => {
     if (isDragging) {
@@ -285,8 +285,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (!pageRef.current) return;
 
     const rect = pageRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const x = (event.clientX - rect.left) / scale;
+    const y = (event.clientY - rect.top) / scale;
 
     const field = fields.find(f => f.id === fieldId);
     if (!field) return;
@@ -398,10 +398,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''}`}
                 style={{
                   position: 'absolute',
-                  left: field.x,
-                  top: field.y,
-                  width: field.width,
-                  height: field.height,
+                  left: field.x * scale,
+                  top: field.y * scale,
+                  width: field.width * scale,
+                  height: field.height * scale,
                   border: '2px dashed #007bff',
                   backgroundColor: 'rgba(0, 123, 255, 0.1)',
                   cursor: movable ? 'move' : 'default',
@@ -455,10 +455,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 className="field-overlay new"
                 style={{
                   position: 'absolute',
-                  left: newField.x,
-                  top: newField.y,
-                  width: newField.width,
-                  height: newField.height,
+                  left: (newField.x || 0) * scale,
+                  top: (newField.y || 0) * scale,
+                  width: (newField.width || 0) * scale,
+                  height: (newField.height || 0) * scale,
                   border: '2px dashed #28a745',
                   backgroundColor: 'rgba(40, 167, 69, 0.1)',
                   display: 'flex',
