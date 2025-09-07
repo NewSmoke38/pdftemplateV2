@@ -99,6 +99,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Add keyboard controls for field positioning
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore keyboard shortcuts if an input field is focused
+      const target = event.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        return;
+      }
       if (!movable || !selectedFieldId) return;
 
       const field = fields.find(f => f.id === selectedFieldId);

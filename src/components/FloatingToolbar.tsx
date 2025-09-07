@@ -20,6 +20,7 @@ interface FloatingToolbarProps {
   isProcessing: boolean;
   movable: boolean;
   onMovableToggle: () => void;
+  onExportFields: () => void;
 }
 
 const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
@@ -38,6 +39,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   isProcessing,
   movable,
   onMovableToggle,
+  onExportFields,
 }) => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [showFieldEditor, setShowFieldEditor] = useState(false);
@@ -169,6 +171,15 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               title="Templates"
             >
               💾
+            </button>
+          )}
+          {movable && (
+            <button
+              className="toolbar-icon"
+              onClick={onExportFields}
+              title="Export Fields Configuration"
+            >
+              📤
             </button>
           )}
           {!movable && (

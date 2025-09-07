@@ -81,32 +81,12 @@ function App() {
         "pageNumber": 1
     },
     {
-        "id": "field_1757231818844",
-        "x": 139.9289779663086,
-        "y": 332.8409118652344,
-        "width": 100,
-        "height": 20,
-        "label": "Claimed Hours",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
         "id": "field_1757250271849",
         "x": 307.8984375,
         "y": 524.7265625,
         "width": 132,
         "height": 20,
         "label": "Approved Hours",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757250507299",
-        "x": 102.8984375,
-        "y": 289.7265625,
-        "width": 100,
-        "height": 20,
-        "label": "Activity Date",
         "type": "text",
         "pageNumber": 1
     },
@@ -119,8 +99,141 @@ function App() {
         "label": "Declaration Date",
         "type": "text",
         "pageNumber": 1
+    },
+    {
+        "id": "field_1757256296778",
+        "x": 144.8984375,
+        "y": 335.2265625,
+        "width": 197,
+        "height": 20,
+        "label": "Claimed Hours",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757256306444",
+        "x": 105.8984375,
+        "y": 292.2265625,
+        "width": 170,
+        "height": 20,
+        "label": "Activity Date",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757256490526",
+        "x": 283.8359375,
+        "y": 175.7265625,
+        "width": 239,
+        "height": 20,
+        "label": "Nature of Activity",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256521542",
+        "x": 184.1640625,
+        "y": 201.7265625,
+        "width": 283,
+        "height": 24,
+        "label": "Name of Student",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256539025",
+        "x": 416.046875,
+        "y": 226.7265625,
+        "width": 128,
+        "height": 20,
+        "label": "Division",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256554758",
+        "x": 182.859375,
+        "y": 248.7265625,
+        "width": 239,
+        "height": 24,
+        "label": "Date of Activity",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256570626",
+        "x": 185.7265625,
+        "y": 274.7265625,
+        "width": 241,
+        "height": 20,
+        "label": "Time",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256580259",
+        "x": 183.9296875,
+        "y": 297.7265625,
+        "width": 245,
+        "height": 20,
+        "label": "Venue",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256590911",
+        "x": 184.78125,
+        "y": 322.7265625,
+        "width": 244,
+        "height": 20,
+        "label": "Organized by",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256604563",
+        "x": 184.3203125,
+        "y": 345.7265625,
+        "width": 241.6796875,
+        "height": 27,
+        "label": "Name of Faculty In charge",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256681412",
+        "x": 76.765625,
+        "y": 419.2265625,
+        "width": 500,
+        "height": 114,
+        "label": "Objectives of the Activity",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256720515",
+        "x": 74.78125,
+        "y": 554.2265625,
+        "width": 503,
+        "height": 200,
+        "label": "Execution of Activity",
+        "type": "text",
+        "pageNumber": 2
+    },
+    {
+        "id": "field_1757256794979",
+        "x": 72.6484375,
+        "y": 170.7265625,
+        "width": 509,
+        "height": 227,
+        "label": "Outcomes",
+        "type": "text",
+        "pageNumber": 3
     }
 ]
+
+
+
 
   // Load and merge PDF files directly on component mount
   useEffect(() => {
@@ -382,6 +495,19 @@ function App() {
 
   const fieldStats = PDFFiller.getFieldStats(fields, formData);
 
+  // Helper function to export current fields configuration
+  const exportFieldsConfiguration = useCallback(() => {
+    console.log('📋 EXPORT FIELDS CONFIGURATION');
+    console.log('================================');
+    console.log('Copy this code to replace the staticFields array:');
+    console.log('');
+    console.log('const staticFields: FieldPosition[] = ' + JSON.stringify(fields, null, 2) + ';');
+    console.log('');
+    console.log('================================');
+    console.log('Total fields:', fields.length);
+    console.log('Fields data:', fields);
+  }, [fields]);
+
   return (
     <div className="app">
       {notification && (
@@ -444,6 +570,7 @@ function App() {
           isProcessing={isProcessing}
           movable={movable}
           onMovableToggle={() => setMovable(!movable)}
+          onExportFields={exportFieldsConfiguration}
         />
       )}
     </div>
