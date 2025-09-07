@@ -329,6 +329,29 @@ body {
   min-height: 20px;
 }
 
+/* Field overlay editing state */
+.field-overlay.editing {
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+/* Inline editing input */
+.field-edit-input {
+  background: white !important;
+  border: 2px solid #28a745 !important;
+  border-radius: 4px !important;
+  padding: 2px 4px !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  color: #28a745 !important;
+  width: 100% !important;
+  text-align: center !important;
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
+  z-index: 1001 !important;
+}
+
 .field-overlay.dragging {
   cursor: grabbing;
   z-index: 1000;
@@ -341,6 +364,24 @@ body {
 
 .field-overlay:hover {
   background: rgba(0, 123, 255, 0.2);
+}
+
+/* Show edit icon only when in movable mode */
+.field-overlay.movable:hover::after {
+  content: "✏️";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0.8;
 }
 
 .field-overlay.selected {
@@ -1163,6 +1204,11 @@ body {
     min-height: 25px;
   }
 
+  .field-edit-input {
+    font-size: 10px !important;
+    padding: 1px 2px !important;
+  }
+
   .resize-handle {
     width: 12px;
     height: 12px;
@@ -1265,6 +1311,11 @@ body {
     font-size: 9px;
     min-width: 25px;
     min-height: 20px;
+  }
+
+  .field-edit-input {
+    font-size: 9px !important;
+    padding: 1px 2px !important;
   }
 
   .resize-handle {

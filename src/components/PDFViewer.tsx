@@ -48,7 +48,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragFieldId, setDragFieldId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState<string>('');
   const pageRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -239,6 +242,48 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     onFieldSelect(fieldId);
   };
 
+  const handleFieldDoubleClick = (event: React.MouseEvent, fieldId: string) => {
+    event.stopPropagation();
+    if (!movable) return;
+    
+    const field = fields.find(f => f.id === fieldId);
+    if (!field) return;
+    
+    setEditingFieldId(fieldId);
+    setEditingLabel(field.label);
+    
+    // Focus the input after a short delay to ensure it's rendered
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, 10);
+  };
+
+  const handleLabelSave = () => {
+    if (editingFieldId && editingLabel.trim()) {
+      onFieldUpdate(editingFieldId, { label: editingLabel.trim() });
+    }
+    setEditingFieldId(null);
+    setEditingLabel('');
+  };
+
+  const handleLabelCancel = () => {
+    setEditingFieldId(null);
+    setEditingLabel('');
+  };
+
+  const handleLabelKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleLabelSave();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      handleLabelCancel();
+    }
+  };
+
   const handleFieldMouseDown = (event: React.MouseEvent, fieldId: string) => {
     event.stopPropagation();
     if (!movable || !pageRef.current) return;
@@ -413,7 +458,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             {fields.filter(field => field.pageNumber === pageNumber).map((field) => (
               <div
                 key={field.id}
-                className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''}`}
+                className={`field-overlay ${selectedFieldId === field.id ? 'selected' : ''} ${isDragging && dragFieldId === field.id ? 'dragging' : ''} ${editingFieldId === field.id ? 'editing' : ''} ${movable ? 'movable' : ''}`}
                 style={{
                   position: 'absolute',
                   left: field.x * scale,
@@ -431,10 +476,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   fontWeight: 'bold',
                 }}
                 onClick={(e) => handleFieldClick(e, field.id)}
+                onDoubleClick={(e) => handleFieldDoubleClick(e, field.id)}
                 onMouseDown={(e) => handleFieldMouseDown(e, field.id)}
                 onTouchStart={(e) => handleFieldTouchStart(e, field.id)}
               >
-                {field.label}
+                {editingFieldId === field.id ? (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editingLabel}
+                    onChange={(e) => setEditingLabel(e.target.value)}
+                    onBlur={handleLabelSave}
+                    onKeyDown={handleLabelKeyDown}
+                    className="field-edit-input"
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  field.label
+                )}
                 {selectedFieldId === field.id && movable && (
                   <>
                     <div
