@@ -114,6 +114,53 @@ export class PDFFiller {
       const font = await this.loadFont(pdfDoc);
       console.log('📄 PDFFiller: Font loaded');
 
+      // Helper function for text wrapping
+      const wrapText = (text: string, maxWidth: number, fontSize: number) => {
+        const allLines: string[] = [];
+        const paragraphs = text.split('\n');
+        for (const paragraph of paragraphs) {
+          const words = paragraph.split(' ');
+          let line = '';
+
+          for (const word of words) {
+            const wordWidth = font.widthOfTextAtSize(word, fontSize);
+
+            if (wordWidth > maxWidth) {
+              // Handle very long words
+              if (line.length > 0) {
+                allLines.push(line);
+                line = '';
+              }
+
+              let tempWord = word;
+              while (tempWord.length > 0) {
+                let cutIndex = tempWord.length;
+                while (font.widthOfTextAtSize(tempWord.substring(0, cutIndex), fontSize) > maxWidth) {
+                  cutIndex--;
+                }
+                if (cutIndex === 0) cutIndex = 1; // Force at least one character
+                allLines.push(tempWord.substring(0, cutIndex));
+                tempWord = tempWord.substring(cutIndex);
+              }
+            } else {
+              // Handle normal words
+              const testLine = line.length > 0 ? `${line} ${word}` : word;
+              if (font.widthOfTextAtSize(testLine, fontSize) > maxWidth) {
+                allLines.push(line);
+                line = word;
+              } else {
+                line = testLine;
+              }
+            }
+          }
+
+          if (line.length > 0) {
+            allLines.push(line);
+          }
+        }
+        return allLines;
+      };
+
       // Fill in the text for each field
       console.log('📄 PDFFiller: Processing fields', fields);
       for (const field of fields) {
@@ -155,13 +202,18 @@ export class PDFFiller {
         });
 
         // Add text to the PDF
-        targetPage.drawText(value, {
-          x: pdfX + 2, // Small padding from field border
-          y: pdfY + (field.height - fontSize) / 2, // Center vertically
-          size: fontSize,
-          font: font,
-          color: rgb(0, 0, 0), // Black text
-        });
+        const lines = wrapText(value, field.width - 4, fontSize); // 4 for padding
+        let y = pdfY + field.height - fontSize; // Start from top
+        for (const line of lines) {
+          targetPage.drawText(line.trim(), {
+            x: pdfX + 2, // Small padding
+            y,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+          });
+          y -= fontSize * 1.2; // Move to next line
+        }
       }
 
       // Save the PDF
