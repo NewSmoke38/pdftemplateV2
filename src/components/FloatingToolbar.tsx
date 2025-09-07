@@ -1,25 +1,6 @@
 import React, { useState } from 'react';
 import { type FieldPosition } from './PDFViewer';
 import { type Template } from './TemplateManager';
-import {
-  TextField,
-  Button,
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  CircularProgress,
-  Chip,
-  Paper,
-  Divider,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Close as CloseIcon, Download as DownloadIcon } from '@mui/icons-material';
 import dayjs from 'dayjs';
 
 interface FloatingToolbarProps {
@@ -133,52 +114,33 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     const isFilled = value && value.trim() !== '';
 
     const commonProps = {
-      fullWidth: true,
-      variant: 'outlined',
-      size: 'medium',
+      className: `form-input ${isFilled ? 'filled' : ''}`,
       placeholder: `Enter ${field.label.toLowerCase()}...`,
       value,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => onFormDataChange(field.id, e.target.value),
-      sx: {
-        '& .MuiOutlinedInput-root': {
-          backgroundColor: isFilled ? '#f8fff8' : 'white',
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: isFilled ? '#4CAF50' : '#667eea',
-          },
-        },
-      },
     };
 
     switch (field.type) {
       case 'date':
         return (
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              value={value ? dayjs(value) : null}
-              onChange={(newValue) => {
-                onFormDataChange(field.id, newValue ? newValue.format('YYYY-MM-DD') : '');
-              }}
-              slotProps={{
-                textField: {
-                  ...commonProps,
-                  placeholder: 'Select date...',
-                },
-              }}
-            />
-          </LocalizationProvider>
+          <input
+            type="date"
+            {...commonProps}
+            value={value ? dayjs(value).format('YYYY-MM-DD') : ''}
+            onChange={(e) => onFormDataChange(field.id, e.target.value)}
+          />
         );
       case 'number':
         return (
-          <TextField
+          <input
             {...commonProps}
             type="number"
             placeholder="Enter number..."
-            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
           />
         );
       default:
         return (
-          <TextField
+          <input
             {...commonProps}
             type="text"
           />
@@ -487,123 +449,69 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       )}
 
       {/* Form Modal */}
-      <Dialog
-        open={showFormModal}
-        onClose={() => setShowFormModal(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            maxHeight: '90vh',
-          },
-        }}
-      >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          pb: 1,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-        }}>
-          <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
-            📝 Fill Out Form
-          </Typography>
-          <IconButton
-            onClick={() => setShowFormModal(false)}
-            sx={{ color: 'white' }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        
-        <DialogContent sx={{ p: 3 }}>
-          {fields.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                📋 No Fields Available
-              </Typography>
-              <Typography color="text.secondary">
-                Contact your administrator to add form fields to this document.
-              </Typography>
-            </Box>
-          ) : (
-            <>
-              <Paper 
-                elevation={1} 
-                sx={{ 
-                  p: 2, 
-                  mb: 3, 
-                  textAlign: 'center',
-                  background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                }}
-              >
-                <Typography variant="body1" color="text.secondary">
-                  <strong>{Object.keys(formData).filter(key => formData[key]).length}</strong> of{' '}
-                  <strong>{fields.length}</strong> fields completed
-                </Typography>
-              </Paper>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {fields.map((field) => (
-                  <Box key={field.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        {getFieldTypeIcon(field.type)} {field.label}
-                      </Typography>
-                      {formData[field.id] && formData[field.id].trim() !== '' && (
-                        <Chip 
-                          label="✓" 
-                          size="small" 
-                          color="success" 
-                          sx={{ ml: 'auto' }}
-                        />
-                      )}
-                    </Box>
-                    {renderFormInput(field)}
-                  </Box>
-                ))}
-              </Box>
-            </>
-          )}
-        </DialogContent>
-        
-        {fields.length > 0 && (
-          <>
-            <Divider />
-            <DialogActions sx={{ p: 3, justifyContent: 'center' }}>
-              <Button
-                onClick={onFillAndDownload}
-                disabled={isProcessing}
-                variant="contained"
-                size="large"
-                startIcon={isProcessing ? <CircularProgress size={20} color="inherit" /> : <DownloadIcon />}
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  borderRadius: 2,
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
-                  },
-                  '&:disabled': {
-                    background: '#6c757d',
-                    transform: 'none',
-                    boxShadow: 'none',
-                  },
-                }}
-              >
-                {isProcessing ? 'Processing...' : 'Download Filled PDF'}
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+      {showFormModal && (
+        <div className="modal-overlay">
+          <div className="modal form-modal">
+            <div className="modal-header">
+              <h3>📝 Fill Out Form</h3>
+              <button onClick={() => setShowFormModal(false)} className="close-modal">
+                &times;
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              {fields.length === 0 ? (
+                <div className="empty-state">
+                  <h4>📋 No Fields Available</h4>
+                  <p>Contact your administrator to add form fields to this document.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="form-summary">
+                    <p>
+                      <strong>{Object.keys(formData).filter(key => formData[key]).length}</strong> of{' '}
+                      <strong>{fields.length}</strong> fields completed
+                    </p>
+                  </div>
+                  
+                  <div className="form-fields">
+                    {fields.map((field) => (
+                      <div key={field.id} className="form-field-group">
+                        <div className="form-field-label">
+                           <label>{getFieldTypeIcon(field.type)} {field.label}</label>
+                          {formData[field.id] && formData[field.id].trim() !== '' && (
+                            <span className="chip success">✓</span>
+                          )}
+                        </div>
+                        {renderFormInput(field)}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {fields.length > 0 && (
+              <>
+                <div className="modal-actions">
+                  <button
+                    onClick={onFillAndDownload}
+                    disabled={isProcessing}
+                    className="button primary download-button"
+                  >
+                    {isProcessing ? (
+                      <div className="spinner" />
+                    ) : (
+                      '📄'
+                    )}
+                    {isProcessing ? 'Processing...' : 'Download Filled PDF'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };
