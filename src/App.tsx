@@ -5,6 +5,8 @@ import FloatingToolbar from './components/FloatingToolbar';
 import { PDFFiller } from './utils/pdfFiller';
 import './App.css';
 
+
+
 function App() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [fields, setFields] = useState<FieldPosition[]>([]);
@@ -20,8 +22,8 @@ function App() {
   const staticFields: FieldPosition[] = [
     {
         "id": "field_1757231747796",
-        "x": 140.44602584838867,
-        "y": 146.84091186523438,
+        "x": 134.44602584838867,
+        "y": 148.84091186523438,
         "width": 302,
         "height": 20,
         "label": "Student Name",
@@ -50,8 +52,8 @@ function App() {
     },
     {
         "id": "field_1757231779180",
-        "x": 142.4673309326172,
-        "y": 250.84091186523438,
+        "x": 137.4673309326172,
+        "y": 246.84091186523438,
         "width": 396,
         "height": 20,
         "label": "Activity Name",
@@ -60,8 +62,8 @@ function App() {
     },
     {
         "id": "field_1757231787912",
-        "x": 147.33238983154297,
-        "y": 272.8409118652344,
+        "x": 145.33238983154297,
+        "y": 268.8409118652344,
         "width": 391,
         "height": 20,
         "label": "Types of Activity",
@@ -69,19 +71,9 @@ function App() {
         "pageNumber": 1
     },
     {
-        "id": "field_1757231797700",
-        "x": 106.5383529663086,
-        "y": 293.8409118652344,
-        "width": 175,
-        "height": 20,
-        "label": "Date",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
         "id": "field_1757231812429",
-        "x": 163.3892059326172,
-        "y": 313.8409118652344,
+        "x": 161.3892059326172,
+        "y": 310.8409118652344,
         "width": 375,
         "height": 20,
         "label": "Place/Org",
@@ -90,11 +82,41 @@ function App() {
     },
     {
         "id": "field_1757231818844",
-        "x": 145.9289779663086,
-        "y": 336.8409118652344,
+        "x": 139.9289779663086,
+        "y": 332.8409118652344,
         "width": 100,
         "height": 20,
-        "label": "Hrs",
+        "label": "Claimed Hours",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757250271849",
+        "x": 307.8984375,
+        "y": 524.7265625,
+        "width": 132,
+        "height": 20,
+        "label": "Approved Hours",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757250507299",
+        "x": 102.8984375,
+        "y": 289.7265625,
+        "width": 100,
+        "height": 20,
+        "label": "Activity Date",
+        "type": "text",
+        "pageNumber": 1
+    },
+    {
+        "id": "field_1757250592332",
+        "x": 373.8984375,
+        "y": 404.7265625,
+        "width": 210,
+        "height": 20,
+        "label": "Declaration Date",
         "type": "text",
         "pageNumber": 1
     }
