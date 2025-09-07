@@ -450,8 +450,8 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
       {/* Form Modal */}
       {showFormModal && (
-        <div className="modal-overlay">
-          <div className="modal form-modal">
+        <div className="modal-overlay" onClick={() => setShowFormModal(false)}>
+          <div className="modal form-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>📝 Fill Out Form</h3>
               <button onClick={() => setShowFormModal(false)} className="close-modal">

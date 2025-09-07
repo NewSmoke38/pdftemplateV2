@@ -1164,6 +1164,8 @@ input[type="password"] {
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
 }
 
 .form-modal-header {
@@ -1742,6 +1744,8 @@ input[type="password"] {
 
 .form-modal .modal-content {
   padding-top: 1rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .form-summary {
