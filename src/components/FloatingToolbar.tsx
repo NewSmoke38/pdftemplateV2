@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { type FieldPosition } from './PDFViewer';
 import { type Template } from './TemplateManager';
 import dayjs from 'dayjs';
+import Tooltip from '@mui/material/Tooltip';
 
 interface FloatingToolbarProps {
   fields: FieldPosition[];
@@ -19,7 +20,6 @@ interface FloatingToolbarProps {
   isProcessing: boolean;
   movable: boolean;
   onMovableToggle: () => void;
-  onExportFields: () => void;
 }
 
 const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
@@ -38,7 +38,6 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   isProcessing,
   movable,
   onMovableToggle,
-  onExportFields,
 }) => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [showFieldEditor, setShowFieldEditor] = useState(false);
@@ -48,6 +47,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const [templateDescription, setTemplateDescription] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(true);
 
   const togglePanel = (panel: string) => {
     setActivePanel(activePanel === panel ? null : panel);
@@ -93,7 +93,6 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     onTemplateLoad(template);
     setShowTemplates(false);
   };
-console.log("dummy");
 
   const handleDeleteTemplate = (id: string) => {
     if (window.confirm('Are you sure you want to delete this template?')) {
@@ -172,31 +171,28 @@ console.log("dummy");
               💾
             </button>
           )}
+          {!movable && (
+            <Tooltip title="Fill PDF and Download" arrow open={isTooltipOpen}>
+              <button
+                className="toolbar-icon"
+                onClick={() => {
+                  setShowFormModal(true);
+                  setIsTooltipOpen(false);
+                }}
+              >
+                📝
+              </button>
+            </Tooltip>
+          )}
           {movable && (
             <button
-              className="toolbar-icon"
-              onClick={onExportFields}
-              title="Export Fields Configuration"
+              className={`toolbar-icon ${activePanel === 'download' ? 'active' : ''}`}
+              onClick={() => togglePanel('download')}
+              title="Download"
             >
-              📤
+              📄
             </button>
           )}
-          {!movable && (
-            <button
-              className="toolbar-icon"
-              onClick={() => setShowFormModal(true)}
-              title="Fill Form"
-            >
-              📝
-            </button>
-          )}
-          <button
-            className={`toolbar-icon ${activePanel === 'download' ? 'active' : ''}`}
-            onClick={() => togglePanel('download')}
-            title="Download"
-          >
-            📄
-          </button>
           <button
             className={`toolbar-icon ${movable ? 'active' : ''}`}
             onClick={onMovableToggle}

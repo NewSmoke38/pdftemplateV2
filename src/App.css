@@ -1032,7 +1032,7 @@ body {
 .toolbar-icons {
   display: flex;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(232, 243, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 25px;
   padding: 0.5rem;
@@ -1066,7 +1066,7 @@ body {
 }
 
 .toolbar-icon.active {
-  background: #667eea;
+  background: #1976d2;
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);

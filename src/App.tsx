@@ -382,19 +382,6 @@ function App() {
 
   const fieldStats = PDFFiller.getFieldStats(fields, formData);
 
-  // Helper function to export current fields configuration
-  const exportFieldsConfiguration = useCallback(() => {
-    console.log('📋 EXPORT FIELDS CONFIGURATION');
-    console.log('================================');
-    console.log('Copy this code to replace the staticFields array:');
-    console.log('');
-    console.log('const staticFields: FieldPosition[] = ' + JSON.stringify(fields, null, 2) + ';');
-    console.log('');
-    console.log('================================');
-    console.log('Total fields:', fields.length);
-    console.log('Fields data:', fields);
-  }, [fields]);
-
   return (
     <div className="app">
       {notification && (
@@ -457,7 +444,6 @@ function App() {
           isProcessing={isProcessing}
           movable={movable}
           onMovableToggle={() => setMovable(!movable)}
-          onExportFields={exportFieldsConfiguration}
         />
       )}
     </div>
