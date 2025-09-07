@@ -119,8 +119,28 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       className: `form-input ${isFilled ? 'filled' : ''}`,
       placeholder: `Enter ${field.label.toLowerCase()}...`,
       value,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onFormDataChange(field.id, e.target.value),
     };
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onFormDataChange(field.id, e.target.value);
+    };
+    
+    const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onFormDataChange(field.id, e.target.value);
+      e.target.style.height = 'auto';
+      e.target.style.height = `${e.target.scrollHeight}px`;
+    };
+    
+    if (field.multiline) {
+      return (
+        <textarea
+          {...commonProps}
+          rows={5}
+          onChange={handleTextareaChange}
+          style={{ resize: 'vertical', minHeight: '100px' }}
+        />
+      );
+    }
 
     switch (field.type) {
       case 'date':
@@ -129,7 +149,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             type="date"
             {...commonProps}
             value={value ? dayjs(value).format('YYYY-MM-DD') : ''}
-            onChange={(e) => onFormDataChange(field.id, e.target.value)}
+            onChange={handleInputChange}
           />
         );
       case 'number':
@@ -138,6 +158,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             {...commonProps}
             type="number"
             placeholder="Enter number..."
+            onChange={handleInputChange}
           />
         );
       default:
@@ -145,6 +166,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           <input
             {...commonProps}
             type="text"
+            onChange={handleInputChange}
           />
         );
     }

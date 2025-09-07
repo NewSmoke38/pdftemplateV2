@@ -15,6 +15,7 @@ export interface FieldPosition {
   label: string;
   type: 'text' | 'date' | 'number';
   pageNumber: number; // Page number where this field is located (1-based)
+  multiline?: boolean;
 }
 
 interface PDFViewerProps {

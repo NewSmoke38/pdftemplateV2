@@ -53,7 +53,7 @@ function App() {
     {
         "id": "field_1757231779180",
         "x": 137.4673309326172,
-        "y": 246.84091186523438,
+        "y": 248.84091186523438,
         "width": 396,
         "height": 20,
         "label": "Activity Name",
@@ -83,7 +83,7 @@ function App() {
     {
         "id": "field_1757250271849",
         "x": 307.8984375,
-        "y": 524.7265625,
+        "y": 521.7265625,
         "width": 132,
         "height": 20,
         "label": "Approved Hours",
@@ -93,7 +93,7 @@ function App() {
     {
         "id": "field_1757250592332",
         "x": 373.8984375,
-        "y": 403.7265625,
+        "y": 406.7265625,
         "width": 210,
         "height": 20,
         "label": "Declaration Date",
@@ -102,8 +102,8 @@ function App() {
     },
     {
         "id": "field_1757256296778",
-        "x": 144.8984375,
-        "y": 335.2265625,
+        "x": 140.8984375,
+        "y": 331.2265625,
         "width": 197,
         "height": 20,
         "label": "Claimed Hours",
@@ -112,8 +112,8 @@ function App() {
     },
     {
         "id": "field_1757256306444",
-        "x": 105.8984375,
-        "y": 292.2265625,
+        "x": 101.8984375,
+        "y": 291.2265625,
         "width": 170,
         "height": 20,
         "label": "Activity Date",
@@ -162,7 +162,7 @@ function App() {
     },
     {
         "id": "field_1757256570626",
-        "x": 185.7265625,
+        "x": 182.7265625,
         "y": 274.7265625,
         "width": 241,
         "height": 20,
@@ -208,7 +208,8 @@ function App() {
         "height": 114,
         "label": "Objectives of the Activity",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 2,
+        "multiline": true
     },
     {
         "id": "field_1757256720515",
@@ -218,7 +219,8 @@ function App() {
         "height": 200,
         "label": "Execution of Activity",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 2,
+        "multiline": true
     },
     {
         "id": "field_1757256794979",
@@ -228,11 +230,46 @@ function App() {
         "height": 227,
         "label": "Outcomes",
         "type": "text",
-        "pageNumber": 3
+        "pageNumber": 3,
+        "multiline": true
     }
 ]
 
-
+const dummyData: Record<string, string> = {
+  "field_1757231747796": "Shivani Sharma",
+  "field_1757231755821": "2110992222",
+  "field_1757231762714": "BE-11",
+  "field_1757231779180": "Won 1st prize in hackathon",
+  "field_1757231787912": "Technical",
+  "field_1757256306444": "2024-01-15",
+  "field_1757231812429": "Chandigarh University",
+  "field_1757256296778": "10",
+  "field_1757250271849": "10",
+  "field_1757250592332": "2024-01-20",
+  "field_1757256490526": "Technical",
+  "field_1757256521542": "Shivani Sharma",
+  "field_1757256539025": "BE-11",
+  "field_1757256554758": "2024-01-15",
+  "field_1757256570626": "10:00 AM",
+  "field_1757256580259": "Chandigarh University",
+  "field_1757256590911": "Dr. APJ Abdul Kalam Block",
+  "field_1757256604563": "Dr. S.S. Bhatnagar",
+  "field_1757256681412": `1. To win the hackathon.
+2. To learn new technologies.
+3. To work in a team.
+4. To solve a real-world problem.
+5. To have fun.`,
+  "field_1757256720515": `1. We started by brainstorming ideas.
+2. We then created a plan and divided the work.
+3. We worked on the project for 24 hours straight.
+4. We faced many challenges but we overcame them.
+5. We finally completed the project and presented it to the judges.`,
+  "field_1757256794979": `1. We won the first prize in the hackathon.
+2. We learned a lot of new things.
+3. We worked as a team and supported each other.
+4. We are proud of our project and what we accomplished.
+5. We are now more confident in our abilities.`,
+};
 
 
   // Load and merge PDF files directly on component mount
@@ -493,6 +530,11 @@ function App() {
     }
   }, [pdfFile, fields, formData, showNotification]);
 
+  const handleFillWithDummyData = () => {
+    setFormData(dummyData);
+    showNotification('success', 'Form filled with dummy data!');
+  };
+
   const fieldStats = PDFFiller.getFieldStats(fields, formData);
 
   // Helper function to export current fields configuration
@@ -517,6 +559,7 @@ function App() {
       )}
 
       <div className="app-content">
+        <button onClick={handleFillWithDummyData} style={{ marginBottom: '1rem' }}>Fill with Dummy Data</button>
         {pdfFile ? (
           <div className="main-workspace">
             <div className="pdf-section">
