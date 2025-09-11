@@ -21,106 +21,6 @@ function App() {
   // Fields for different pages - Page 1 fields
   const staticFields: FieldPosition[] = [
     {
-        "id": "field_1757231747796",
-        "x": 134.44602584838867,
-        "y": 152.84091186523438,
-        "width": 302,
-        "height": 20,
-        "label": "Student Name",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757231755821",
-        "x": 92.77415084838867,
-        "y": 173.84091186523438,
-        "width": 350,
-        "height": 20,
-        "label": "URN",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757231762714",
-        "x": 181.6519889831543,
-        "y": 197.84091186523438,
-        "width": 100,
-        "height": 20,
-        "label": "Div",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757231779180",
-        "x": 137.4673309326172,
-        "y": 252.84091186523438,
-        "width": 396,
-        "height": 20,
-        "label": "Activity Name",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757231787912",
-        "x": 145.33238983154297,
-        "y": 273.8409118652344,
-        "width": 391,
-        "height": 20,
-        "label": "Types of Activity",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757231812429",
-        "x": 161.3892059326172,
-        "y": 314.8409118652344,
-        "width": 375,
-        "height": 20,
-        "label": "Place/Org",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757250271849",
-        "x": 307.8984375,
-        "y": 525.7265625,
-        "width": 132,
-        "height": 20,
-        "label": "Approved Hours",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757250592332",
-        "x": 373.8984375,
-        "y": 409.7265625,
-        "width": 210,
-        "height": 20,
-        "label": "Declaration Date",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757256296778",
-        "x": 139.8984375,
-        "y": 336.2265625,
-        "width": 197,
-        "height": 20,
-        "label": "Claimed Hours",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
-        "id": "field_1757256306444",
-        "x": 101.8984375,
-        "y": 294.2265625,
-        "width": 170,
-        "height": 20,
-        "label": "Activity Date",
-        "type": "text",
-        "pageNumber": 1
-    },
-    {
         "id": "field_1757256490526",
         "x": 283.8359375,
         "y": 179.7265625,
@@ -128,7 +28,7 @@ function App() {
         "height": 20,
         "label": "Nature of Activity",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256521542",
@@ -138,7 +38,7 @@ function App() {
         "height": 24,
         "label": "Name of Student",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256539025",
@@ -148,7 +48,7 @@ function App() {
         "height": 20,
         "label": "Division",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256554758",
@@ -158,7 +58,7 @@ function App() {
         "height": 24,
         "label": "Date of Activity",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256570626",
@@ -168,7 +68,7 @@ function App() {
         "height": 20,
         "label": "Time",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256580259",
@@ -178,7 +78,7 @@ function App() {
         "height": 20,
         "label": "Venue",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256590911",
@@ -188,7 +88,7 @@ function App() {
         "height": 20,
         "label": "Organized by",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256604563",
@@ -198,7 +98,7 @@ function App() {
         "height": 27,
         "label": "Name of Faculty In charge",
         "type": "text",
-        "pageNumber": 2
+        "pageNumber": 1
     },
     {
         "id": "field_1757256681412",
@@ -208,7 +108,7 @@ function App() {
         "height": 114,
         "label": "Objectives of the Activity",
         "type": "text",
-        "pageNumber": 2,
+        "pageNumber": 1,
         "multiline": true
     },
     {
@@ -219,7 +119,7 @@ function App() {
         "height": 200,
         "label": "Execution of Activity",
         "type": "text",
-        "pageNumber": 2,
+        "pageNumber": 1,
         "multiline": true
     },
     {
@@ -230,7 +130,7 @@ function App() {
         "height": 227,
         "label": "Outcomes",
         "type": "text",
-        "pageNumber": 3,
+        "pageNumber": 2,
         "multiline": true
     }
 ]
@@ -272,56 +172,30 @@ function App() {
 // };
 
 
-  // Load and merge PDF files directly on component mount
+  // Load PDF file directly on component mount
   useEffect(() => {
-    const loadAndMergePDFs = async () => {
+    const loadPDF = async () => {
       try {
-        console.log('Loading main.pdf and main1.pdf...');
+        console.log('Loading main1.pdf...');
         
-        // Load both PDF files
-        const [mainResponse, main1Response] = await Promise.all([
-          fetch('/main.pdf'),
-          fetch('/main1.pdf')
-        ]);
+        // Load PDF file
+        const response = await fetch('/main1.pdf');
 
-        if (!mainResponse.ok || !main1Response.ok) {
-          throw new Error('Failed to load one or both PDF files');
+        if (!response.ok) {
+          throw new Error('Failed to load PDF file');
         }
 
-        const [mainBlob, main1Blob] = await Promise.all([
-          mainResponse.blob(),
-          main1Response.blob()
-        ]);
+        const blob = await response.blob();
+        const file = new File([blob], 'main1.pdf', { type: 'application/pdf' });
 
-        const [mainFile, main1File] = [
-          new File([mainBlob], 'main.pdf', { type: 'application/pdf' }),
-          new File([main1Blob], 'main1.pdf', { type: 'application/pdf' })
-        ];
-
-        console.log('Both PDFs loaded successfully, merging...');
-        
-        // Merge the PDFs using PDFFiller
-        const mergedFile = await PDFFiller.mergePDFs(mainFile, main1File);
-        setPdfFile(mergedFile);
-        console.log('PDFs merged successfully:', mergedFile.name);
+        setPdfFile(file);
+        console.log('PDF loaded successfully:', file.name);
       } catch (error) {
-        console.error('Error loading or merging PDFs:', error);
-        // Fallback to just main.pdf if merging fails
-        try {
-          const response = await fetch('/main.pdf');
-          if (response.ok) {
-            const blob = await response.blob();
-            const file = new File([blob], 'main.pdf', { type: 'application/pdf' });
-            setPdfFile(file);
-            console.log('Fallback: main.pdf loaded successfully');
-          }
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError);
-        }
+        console.error('Error loading PDF:', error);
       }
     };
 
-    loadAndMergePDFs();
+    loadPDF();
   }, []);
 
   // Load static fields on initial load
