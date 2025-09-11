@@ -41,7 +41,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale] = useState<number>(0.7);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isAddingField, setIsAddingField] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
@@ -66,8 +66,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setIsMobile(mobile);
       if (mobile && scale > 0.8) {
         setScale(0.8); // Set smaller scale for mobile
-      } else if (!mobile && scale < 1.0) {
-        setScale(1.0); // Reset to normal scale for desktop
       }
     };
 
