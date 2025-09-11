@@ -428,7 +428,8 @@ function App() {
           <div className="main-workspace">
             <div className="pdf-section">
               <div className="section-header">
-                <h2>FataakFill</h2>
+                <h2 style={{ color: 'red' }}>FataakFill</h2>
+                <p>powered by Shivani Sharma, B.Tech, Division C</p>
                 <div className="field-stats">
                   <span>Total Fields: {fieldStats.total}</span>
                   <span>Filled: {fieldStats.filled}</span>
